@@ -1,0 +1,168 @@
+# FORGE authorization matrix.
+#
+# Two matrices, both enforced in code and neither in a prompt:
+#
+#   1. `permissions`  API-level. A FastAPI dependency checks it on every route.
+#   2. `tool_access`  Agent-level. Checked in the tool dispatcher before a tool
+#                     runs, so a shop-floor session physically cannot invoke a
+#                     write tool even if an injected prompt asks it to.
+#                     Prompts are not a security boundary.
+#
+# tests/integration/test_rbac_matrix.py asserts EVERY cell of both matrices.
+# Default is deny. There is no wildcard role and no implicit grant.
+
+version: 3
+
+roles:
+  SHOP_FLOOR_WORKER:
+    persona: "Ravi - Line Operator"
+    label: "Shop Floor"
+    default_page: "/station"
+    explanation_depth: brief          # short, action-oriented; no agent internals
+    rate_limit_per_min: 60
+    description: >
+      Works the wheel assembly station. Needs to know whether THIS unit is good
+      and what to do next. Deliberately cannot submit inspections or see the
+      agent workflow: an operator staring at a reasoning trace is an operator
+      not watching the line.
+
+  QA:
+    persona: "Priya - Quality Assurance"
+    label: "Quality Assurance"
+    default_page: "/dashboard"
+    explanation_depth: full           # full evidence, reasoning, citations
+    rate_limit_per_min: 240
+    description: >
+      Owns quality authority. Submits inspections, reads the full agent
+      workflow and evidence, overrides verdicts, and approves disposition.
+
+  ADMIN:
+    persona: "Sam - Platform Engineer"
+    label: "Administrator"
+    default_page: "/admin"
+    explanation_depth: full
+    rate_limit_per_min: 1000
+    description: >
+      Runs the platform: users, model configuration, feature flags, health,
+      capability matrix. Can submit inspections and read the agent workflow for
+      debugging, but CANNOT rule on quality -- see the separation note below.
+
+# ---------------------------------------------------------------------------
+# API permissions. Format "<resource>:<action>". Default deny.
+# ---------------------------------------------------------------------------
+permissions:
+  SHOP_FLOOR_WORKER:
+    - inspection:read_own_station
+    - inspection:acknowledge
+    - stream:read
+    - pack:read
+
+  QA:
+    - inspection:read
+    - inspection:create          # submit an inspection
+    - inspection:acknowledge
+    - inspection:feedback        # drives the learning loop
+    - inspection:override_verdict
+    - inspection:reclassify
+    - agentrun:read              # the full agent workflow
+    - stream:read
+    - pack:read
+    - analytics:read
+    - analytics:export
+    - knowledge:search
+    - governance:read
+
+  ADMIN:
+    - inspection:read
+    - inspection:create
+    - agentrun:read
+    - stream:read
+    - pack:read
+    - pack:activate
+    - analytics:read
+    - knowledge:search
+    - governance:read
+    - admin:users
+    - admin:rate_limits
+    - admin:feature_flags
+    - admin:model_config
+    - admin:fault_injection
+    - health:read
+
+# ---------------------------------------------------------------------------
+# Agent tool authorization, enforced at the tool dispatcher.
+# A tool absent from a role's list raises UnauthorizedToolError. FAIL CLOSED.
+# ---------------------------------------------------------------------------
+tool_access:
+  _all_roles:
+    - rag.hybrid_search
+    - sensors.correlate
+    - weather.current
+    - recalls.lookup
+    - fx.convert
+
+  SHOP_FLOOR_WORKER: []
+
+  QA:
+    - sql.query_allowlisted_views
+    - chart.generate
+    - history.similar_conflicts
+    - memorybank.append          # naming a novel class is a learning event
+    - mes.job_card
+    - mes.bom_variant
+    - mes.create_qi
+    - mes.update_job_card
+    - threshold.tune
+
+  ADMIN:
+    - sql.query_allowlisted_views
+    - chart.generate
+    - mes.job_card
+    - fault.inject
+
+# ---------------------------------------------------------------------------
+# Autonomy ceiling. Hardcoded, tested, and quoted on stage.
+# ---------------------------------------------------------------------------
+autonomy:
+  # No agent may do these without a named human approver, regardless of
+  # confidence, role, or configuration.
+  never_autonomous:
+    - line.halt                  # a wheel-off event is the failure mode
+    - inspection.pass_critical   # FORGE may reject a part; it may NEVER pass one
+    - policy.change_thresholds
+    - pack.activate_in_production
+
+  # Rejecting is safe. Passing is not. That asymmetry is the whole design.
+  autonomous_allowed:
+    - inspection.reject
+    - inspection.flag_for_review
+    - mes.create_qi_rejected
+    - alert.raise
+
+# ---------------------------------------------------------------------------
+# Governance
+# ---------------------------------------------------------------------------
+governance:
+  # Platform authority and quality authority are separated on purpose. ADMIN can
+  # reconfigure the system but cannot rule on a part; QA rules on parts but
+  # cannot reconfigure the system. Neither role can do both, so no single
+  # account can both weaken a threshold and pass the part it now permits.
+  separation_of_duties:
+    - role: ADMIN
+      must_not_have: [inspection:override_verdict, inspection:feedback]
+    - role: QA
+      must_not_have: [admin:model_config, admin:feature_flags, admin:users]
+
+  # Using any of these writes an audit record with actor, resource,
+  # before/after, IP and correlation_id -- even on success.
+  audited_permissions:
+    - inspection:override_verdict
+    - inspection:create
+    - pack:activate
+    - admin:model_config
+    - admin:feature_flags
+    - admin:users
+    - admin:fault_injection
+
+  audit_retention_days: 365
+  inspection_retention_days: 180

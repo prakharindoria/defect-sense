@@ -1,0 +1,143 @@
+[project]
+name = "forge"
+version = "0.1.0"
+description = "FORGE - Factory Operations Reasoning & Governance Engine. Wheel Assembly Defect Detection Agent."
+requires-python = ">=3.11"
+
+# Dependency tiers. `core` is everything the demo path needs and must install on any machine.
+# Heavier groups are optional so a laptop without a GPU or without Docker still boots.
+dependencies = [
+    # --- boundaries & config -------------------------------------------------
+    "pydantic>=2.9,<3",
+    "pydantic-settings>=2.6",
+    "PyYAML>=6.0.2",
+    # --- web layer -----------------------------------------------------------
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.32",
+    "python-multipart>=0.0.12",
+    "websockets>=13.1",
+    # --- auth ----------------------------------------------------------------
+    "pyjwt>=2.9",
+    "argon2-cffi>=23.1",
+    # --- persistence ---------------------------------------------------------
+    "SQLAlchemy>=2.0.36",
+    "alembic>=1.14",
+    # --- http clients (live external APIs) -----------------------------------
+    "httpx>=0.27",
+    # Routes TLS verification through the OS trust store. REQUIRED on networks
+    # with an intercepting proxy -- see src/forge/bootstrap.py for the measured
+    # failure this prevents. Do not remove without reading that docstring.
+    "truststore>=0.10",
+    # --- observability -------------------------------------------------------
+    "structlog>=24.4",
+    "prometheus-client>=0.21",
+]
+
+[project.optional-dependencies]
+# Postgres / Redis / MinIO profile. Not required for PROFILE=local.
+server = [
+    "psycopg[binary]>=3.2",
+    "redis>=5.2",
+    "minio>=7.2",
+]
+# Vision + retrieval. Large; installed by workstreams B and C.
+ai = [
+    "langgraph>=0.2.45",
+    "langchain-core>=0.3.15",
+    "litellm>=1.52",
+    "chromadb>=0.5.20",
+    "sentence-transformers>=3.3",
+    "rank-bm25>=0.2.2",
+    "faiss-cpu>=1.9",
+    "onnxruntime>=1.20",
+    "opencv-python-headless>=4.10",
+    "numpy>=1.26,<3",
+    "scikit-learn>=1.5",
+    "ruptures>=1.1.9",
+    "Pillow>=11.0",
+]
+dev = [
+    "pytest>=8.3",
+    "pytest-asyncio>=0.24",
+    "pytest-cov>=6.0",
+    "ruff>=0.8",
+    "mypy>=1.13",
+    "fakeredis>=2.26",
+    "respx>=0.21",
+]
+
+[build-system]
+requires = ["setuptools>=75"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+# ---------------------------------------------------------------------------
+# Ruff
+# ---------------------------------------------------------------------------
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+src = ["src", "apps", "tests", "data"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N", "UP", "B", "C4", "SIM", "TCH", "ASYNC", "S"]
+ignore = [
+    "E501",   # line length is handled by the formatter
+    "B008",   # FastAPI Depends() in defaults is idiomatic
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101"]                 # asserts are the point
+"data/generators/**" = ["S311"]       # non-crypto RNG is correct for synthetic data
+"src/forge/domain/**" = ["S311"]
+# Pydantic resolves annotations at runtime to build validators, so moving these
+# imports into a TYPE_CHECKING block would break model construction. TC rules
+# assume the annotation is only ever read by a type checker; for pydantic
+# boundary models that assumption is false.
+"src/forge/domain/state.py" = ["S311", "TC001", "TC002", "TC003"]
+"src/forge/domain/provenance.py" = ["TC001", "TC002", "TC003"]
+# Port DTOs are dataclasses whose FIELD types must resolve at runtime for
+# serialisation and introspection. Ruff's TC rules would push those imports into
+# a TYPE_CHECKING block, which type-checks fine and then raises NameError the
+# first time anything calls get_type_hints on them. The stronger invariant is
+# enforced instead by
+# tests/architecture/test_layering.py::test_port_dataclass_annotations_resolve_at_runtime
+"src/forge/application/ports/*.py" = ["TC001", "TC002", "TC003"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["forge"]
+
+# ---------------------------------------------------------------------------
+# mypy
+# ---------------------------------------------------------------------------
+[tool.mypy]
+python_version = "3.11"
+strict = true
+warn_unreachable = true
+plugins = ["pydantic.mypy"]
+mypy_path = "src"
+explicit_package_bases = true
+
+[[tool.mypy.overrides]]
+# Third-party libraries without shipped stubs.
+module = [
+    "chromadb.*", "sentence_transformers.*", "rank_bm25.*", "faiss.*",
+    "cv2.*", "ruptures.*", "litellm.*", "langgraph.*", "minio.*", "onnxruntime.*",
+]
+ignore_missing_imports = true
+
+# ---------------------------------------------------------------------------
+# pytest
+# ---------------------------------------------------------------------------
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+pythonpath = ["src", "."]
+markers = [
+    "live: hits a real external network API; deselect with -m 'not live'",
+    "slow: takes more than a second",
+    "demo_path: covers a step in docs/DEMO_SCRIPT.md",
+]
+filterwarnings = ["ignore::DeprecationWarning"]

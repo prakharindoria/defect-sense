@@ -1,0 +1,133 @@
+# Feature flags. CLAUDE.md rule 9: anything risky is flagged and defaults OFF.
+# A broken flag costs nothing; a broken feature costs the demo.
+#
+# Every flag declares what breaks if it fails, so the on/off call at hour 30 is
+# made from a written risk statement rather than from memory at 4am.
+# Toggleable at runtime from /admin (requires admin:feature_flags).
+
+version: 2
+
+flags:
+  # --- ingest ---------------------------------------------------------------
+  FEATURE_WEBCAM_INGEST:
+    default: false
+    owner: WS-B
+    description: >
+      Live webcam or phone camera pointed at a physical prop feeds the same
+      frame-stream pipeline as the composite video.
+    blast_radius: >
+      NONE by design. The composite stream is a separate producer; if the
+      webcam device fails the demo continues untouched. Verified by
+      tests/e2e/test_webcam_isolation.py.
+    demo_step: "optional colour on §2"
+
+  FEATURE_VIDEO_STREAM:
+    default: true
+    owner: WS-B
+    description: 2.5D composite conveyor video at 30fps, sampled at 5fps for inference.
+    blast_radius: >
+      HIGH. Falls back to single-image inspection, which still satisfies the
+      MWAI-FRS baseline. Temporal aggregation is disabled and the false-positive
+      rate rises; the degradation banner says so.
+    demo_step: "2:30 happy path"
+
+  # --- intelligence ---------------------------------------------------------
+  FEATURE_VLM_DESCRIPTION:
+    default: false
+    owner: WS-C
+    description: >
+      Use the vision tier to narrate the anomalous region. OFF by default
+      because structured_cv_descriptor is the primary path (ADR-0003), not the
+      fallback. Enabled only if the boot probe reports supports_vision.
+    blast_radius: NONE. structured_cv_descriptor always runs and always produces a description.
+    demo_step: "4:30 money shot (enhancement only)"
+
+  FEATURE_REFLECTION_LOOPS:
+    default: true
+    owner: WS-C
+    description: Adjudicator disagreement re-query and Root Cause groundedness re-retrieval.
+    blast_radius: >
+      MEDIUM. Disabling costs the visible retry counter in the trace and lowers
+      groundedness; verdicts still resolve on first pass.
+    demo_step: "4:30, 6:30"
+
+  FEATURE_FORWARD_RISK_FORECAST:
+    default: true
+    owner: WS-B
+    description: Process Sentinel forecasts defect risk for the next N units from sensor drift.
+    blast_radius: MEDIUM. Loses the "we find the drift, not the defect" beat. Detection unaffected.
+    demo_step: "3:30 prediction"
+
+  # --- integrations ---------------------------------------------------------
+  FEATURE_SLACK_INTERACTIVE:
+    default: false
+    owner: WS-D
+    description: >
+      Block Kit buttons in Slack resolve the same LangGraph interrupt() as the
+      UI. Requires a public callback URL, which hackathon Wi-Fi may not permit.
+    blast_radius: >
+      NONE. The UI approval queue resolves the identical interrupt. Slack
+      degrades from interactive to notify-only and the trace records it.
+    demo_step: "7:30 approve from Slack"
+
+  FEATURE_ERPNEXT_REAL:
+    default: false
+    owner: WS-D
+    description: >
+      Point MESPort at a real ERPNext instance instead of the doctype-faithful
+      simulator. Hard go/no-go at hour 20 (FORGE §17).
+    blast_radius: >
+      NONE to the demo path. ERPNextSimulator and RecordedERPNextAdapter
+      implement the same port with the same blocking semantics.
+    demo_step: "7:30 QI record blocks shipment"
+
+  FEATURE_LIVE_EXTERNAL_APIS:
+    default: true
+    owner: WS-D
+    description: Open-Meteo, NHTSA recalls, FX, Nager.Date called live.
+    blast_radius: >
+      LOW. Each sits behind a breaker with a cached last-good value and a
+      recorded fixture. Stale values render a `stale` chip rather than silently
+      substituting.
+    demo_step: "6:30 root cause citations"
+
+  # --- risky / late ---------------------------------------------------------
+  FEATURE_VOICE_ASSISTANT:
+    default: false
+    owner: unassigned
+    description: Voice control of the product. COULD tier only -- build after hour 28 or not at all.
+    blast_radius: NONE. Purely additive drawer.
+    demo_step: none
+
+  FEATURE_AGENT_REPLAY:
+    default: false
+    owner: WS-C
+    description: Re-run a past event through the current graph for A/B of prompt or threshold changes.
+    blast_radius: NONE. Read-only replay writes to a shadow trace, never to MES.
+    demo_step: none
+
+  FEATURE_FAULT_INJECTION:
+    default: true
+    owner: WS-D
+    description: >
+      Admin panel that forces breakers open, drops MES, delays the LLM, or
+      corrupts frames. This is a demo asset, not a liability -- breaking your
+      own system on stage is the strongest credibility move available.
+    blast_radius: >
+      Guarded by admin:fault_injection and refused entirely when
+      DEMO_MODE=true and the demo timer is running.
+    demo_step: "10:30 break it on purpose"
+
+# ---------------------------------------------------------------------------
+# Kill switches. Not features -- emergency levers for the stage.
+# ---------------------------------------------------------------------------
+kill_switches:
+  DEMO_MODE:
+    default: false
+    description: >
+      Pins RNG seeds, fixes the event sequence, serves LLM responses from the
+      pre-warmed cache, and disables fault injection. Non-negotiable on stage
+      given unknown endpoint latency.
+  READ_ONLY_MODE:
+    default: false
+    description: Blocks every MES write and state mutation. For a judge exploring the UI unsupervised.

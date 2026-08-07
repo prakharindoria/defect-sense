@@ -1,0 +1,36 @@
+# Secrets. .env holds real credentials and must NEVER be committed.
+# .env.example is the template and must contain placeholders only.
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+htmlcov/
+.coverage
+
+# Node
+node_modules/
+dist/
+.vite/
+
+# FORGE generated state -- all reproducible via `python tasks.py seed`
+.forge/
+data/generated/
+*.sqlite3
+chroma_index/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

@@ -1,0 +1,264 @@
+/* FORGE design system — "Cleanroom at night".
+   The reference is anodized metal under vapour lamps seen through polycarbonate
+   machine guarding: glass panels read as tinted safety shielding, not as a
+   Dribbble effect. */
+
+:root {
+  --surface-void: #0b1017;
+  --surface-base: #10161f;
+  --surface-raised: #161e29;
+
+  --glass-bg: rgba(148, 176, 205, 0.055);
+  --glass-border: rgba(168, 199, 230, 0.11);
+  --glass-blur: 20px;
+
+  --accent-molten: #ff7a1a;
+  --accent-signal: #35d6e8;
+
+  /* Andon states — real factory convention; operators read these instantly. */
+  --state-nominal: #21c97a;
+  --state-watch: #f5b32c;
+  --state-alert: #ff7a1a;
+  --state-critical: #f0453f;
+  --state-unknown: #a78bfa; /* novel class — deliberately off-palette */
+
+  --text-primary: #e8eff6;
+  --text-muted: #8ca0b6;
+  --text-faint: #5a6d82;
+
+  /* Rule: if it came from a sensor or a model, it is mono. Tabular figures are
+     how you read a control chart — that is function, not decoration. */
+  --mono: ui-monospace, "SF Mono", "Cascadia Mono", "Roboto Mono", Menlo, monospace;
+  --sans: "Segoe UI", system-ui, -apple-system, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background:
+    radial-gradient(1200px 600px at 15% -10%, rgba(53, 214, 232, 0.06), transparent 60%),
+    radial-gradient(900px 500px at 95% 0%, rgba(255, 122, 26, 0.05), transparent 55%),
+    var(--surface-void);
+  color: var(--text-primary);
+  font-family: var(--sans);
+  font-size: 14px;
+  min-height: 100vh;
+}
+
+.mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+
+/* ---------- layout ---------- */
+.app { max-width: 1500px; margin: 0 auto; padding: 0 20px 48px; }
+
+header.top {
+  display: flex; align-items: center; gap: 16px;
+  padding: 16px 0; border-bottom: 1px solid var(--glass-border); margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+.brand { font-size: 20px; font-weight: 700; letter-spacing: 0.14em; }
+.brand span { color: var(--accent-molten); }
+.tagline { color: var(--text-faint); font-size: 12px; }
+.spacer { flex: 1; }
+
+.chip {
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em;
+  padding: 4px 9px; border-radius: 4px; border: 1px solid var(--glass-border);
+  color: var(--text-muted); white-space: nowrap;
+}
+.chip.synthetic { color: var(--state-unknown); border-color: rgba(167, 139, 250, 0.4); }
+.chip.live { color: var(--state-nominal); border-color: rgba(33, 201, 122, 0.4); }
+.chip.down { color: var(--state-critical); border-color: rgba(240, 69, 63, 0.4); }
+
+.grid { display: grid; gap: 16px; }
+.grid.cols-2 { grid-template-columns: 380px 1fr; }
+.grid.cols-4 { grid-template-columns: repeat(4, 1fr); }
+@media (max-width: 1100px) { .grid.cols-2, .grid.cols-4 { grid-template-columns: 1fr; } }
+
+.panel {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+  border-radius: 10px;
+  padding: 16px;
+}
+.panel h2 {
+  margin: 0 0 12px; font-size: 11px; letter-spacing: 0.16em;
+  text-transform: uppercase; color: var(--text-muted); font-weight: 600;
+}
+
+/* Glassmorphism's failure mode is contrast. Text inside glass sits on a solid
+   backing layer rather than relying on blur. */
+.solid-backing { background: rgba(11, 16, 23, 0.55); border-radius: 6px; padding: 10px 12px; }
+
+/* ---------- andon ---------- */
+.andon {
+  display: flex; align-items: center; gap: 14px;
+  padding: 14px 18px; border-radius: 10px; border: 1px solid var(--glass-border);
+  margin-bottom: 16px;
+}
+.andon .dot { width: 12px; height: 12px; border-radius: 50%; flex: none; }
+.andon .label { font-weight: 700; letter-spacing: 0.1em; font-size: 13px; }
+.andon .detail { color: var(--text-muted); font-size: 12px; }
+
+.state-pass     { background: rgba(33, 201, 122, 0.10); border-color: rgba(33, 201, 122, 0.35); }
+.state-pass .dot { background: var(--state-nominal); }
+.state-defect   { background: rgba(240, 69, 63, 0.10); border-color: rgba(240, 69, 63, 0.40); }
+.state-defect .dot { background: var(--state-critical); animation: pulse 1.6s ease-in-out infinite; }
+.state-escalate { background: rgba(245, 179, 44, 0.10); border-color: rgba(245, 179, 44, 0.38); }
+.state-escalate .dot { background: var(--state-watch); }
+.state-idle .dot { background: var(--text-faint); }
+
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.35; } }
+@media (prefers-reduced-motion: reduce) { .andon .dot { animation: none !important; } }
+
+/* ---------- controls ---------- */
+button {
+  font-family: var(--sans); font-size: 13px; cursor: pointer;
+  background: rgba(53, 214, 232, 0.10); color: var(--text-primary);
+  border: 1px solid rgba(53, 214, 232, 0.30); border-radius: 6px;
+  padding: 9px 14px; transition: background 0.12s;
+}
+button:hover:not(:disabled) { background: rgba(53, 214, 232, 0.18); }
+button:disabled { opacity: 0.45; cursor: not-allowed; }
+button:focus-visible { outline: 2px solid var(--accent-signal); outline-offset: 2px; }
+button.primary {
+  background: rgba(255, 122, 26, 0.16); border-color: rgba(255, 122, 26, 0.45);
+  font-weight: 600;
+}
+button.primary:hover:not(:disabled) { background: rgba(255, 122, 26, 0.26); }
+
+.scenario { display: flex; flex-direction: column; gap: 8px; }
+.scenario-btn { text-align: left; padding: 10px 12px; }
+.scenario-btn.active { border-color: var(--accent-molten); background: rgba(255,122,26,0.14); }
+.scenario-btn .name { font-weight: 600; display: block; margin-bottom: 3px; }
+.scenario-btn .note { color: var(--text-faint); font-size: 11px; line-height: 1.45; }
+
+label.field { display: block; margin: 12px 0 4px; font-size: 11px; color: var(--text-muted); }
+input[type="number"], select {
+  width: 100%; padding: 8px 10px; border-radius: 6px;
+  background: rgba(11, 16, 23, 0.6); color: var(--text-primary);
+  border: 1px solid var(--glass-border); font-family: var(--mono);
+}
+
+/* ---------- KPI ---------- */
+.kpi { text-align: left; }
+.kpi .value { font-family: var(--mono); font-size: 26px; font-weight: 600; line-height: 1.1; }
+.kpi .label { font-size: 10px; letter-spacing: 0.13em; text-transform: uppercase; color: var(--text-faint); margin-top: 5px; }
+
+/* ---------- provenance strip ----------
+   Every panel showing an AI-derived value carries this. In a quality product,
+   *where did this number come from* is the entire job. */
+.provenance {
+  margin-top: 12px; padding-top: 9px; border-top: 1px solid var(--glass-border);
+  font-family: var(--mono); font-size: 10px; color: var(--text-faint);
+  display: flex; gap: 14px; flex-wrap: wrap;
+}
+.provenance .k { color: var(--text-muted); }
+
+/* ---------- tables ---------- */
+table { width: 100%; border-collapse: collapse; font-size: 12px; }
+th {
+  text-align: left; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--text-faint); font-weight: 600; padding: 7px 8px;
+  border-bottom: 1px solid var(--glass-border);
+}
+td { padding: 8px; border-bottom: 1px solid rgba(168, 199, 230, 0.05); font-family: var(--mono); }
+tr.flagged td { background: rgba(240, 69, 63, 0.07); }
+tr.fusion td { background: rgba(255, 122, 26, 0.10); }
+tr.clickable { cursor: pointer; }
+tr.clickable:hover td { background: rgba(53, 214, 232, 0.07); }
+
+/* Status is never colour alone — always icon + label. Colour-blind operators
+   exist, and so do colour-blind judges. */
+.badge { font-family: var(--mono); font-size: 10px; padding: 2px 7px; border-radius: 3px; letter-spacing: 0.06em; }
+.badge.pass     { color: var(--state-nominal);  background: rgba(33,201,122,0.13); }
+.badge.defect   { color: var(--state-critical); background: rgba(240,69,63,0.15); }
+.badge.escalate { color: var(--state-watch);    background: rgba(245,179,44,0.14); }
+.badge.fusion   { color: var(--accent-molten);  background: rgba(255,122,26,0.16); font-weight: 700; }
+
+.reasoning { line-height: 1.65; color: var(--text-primary); font-size: 13px; }
+.muted { color: var(--text-muted); }
+.faint { color: var(--text-faint); font-size: 11px; }
+
+ul.assumptions { margin: 8px 0 0; padding-left: 16px; color: var(--text-muted); font-size: 11px; line-height: 1.7; }
+
+.agent-span { display: flex; align-items: baseline; gap: 10px; padding: 7px 0; border-bottom: 1px solid rgba(168,199,230,0.05); }
+.agent-span .name { font-family: var(--mono); font-size: 11px; color: var(--accent-signal); min-width: 130px; }
+.agent-span .ms { font-family: var(--mono); font-size: 11px; color: var(--text-faint); min-width: 62px; text-align: right; }
+.agent-span .sum { font-size: 12px; color: var(--text-muted); flex: 1; }
+
+footer.bottom {
+  margin-top: 28px; padding-top: 14px; border-top: 1px solid var(--glass-border);
+  display: flex; gap: 18px; flex-wrap: wrap;
+  font-family: var(--mono); font-size: 10px; color: var(--text-faint);
+}
+
+/* ---------- multi-page shell ---------- */
+.mainnav { display: flex; gap: 4px; margin-left: 22px; flex-wrap: wrap; }
+.navlink {
+  color: var(--text-muted); text-decoration: none; font-size: 13px;
+  padding: 7px 12px; border-radius: 6px; border: 1px solid transparent;
+}
+.navlink:hover { color: var(--text-primary); background: rgba(53,214,232,0.07); }
+.navlink.active {
+  color: var(--text-primary); border-color: var(--glass-border);
+  background: var(--glass-bg);
+}
+.navlink:focus-visible { outline: 2px solid var(--accent-signal); outline-offset: 2px; }
+
+.who { text-align: right; margin: 0 4px; }
+.who-name { font-size: 12px; font-weight: 600; }
+.who-role { font-size: 10px; color: var(--text-faint); letter-spacing: 0.06em; }
+
+.page-title { font-size: 21px; font-weight: 700; margin: 4px 0 4px; letter-spacing: 0.01em; }
+.page-sub { color: var(--text-muted); margin: 0 0 18px; font-size: 13px; line-height: 1.6; max-width: 800px; }
+
+/* ---------- login ---------- */
+.login-wrap { min-height: 100vh; display: grid; place-items: center; padding: 32px 20px; }
+.login-card {
+  width: 100%; max-width: 430px; padding: 30px;
+  background: var(--glass-bg); backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border); border-radius: 12px;
+}
+.login-card input {
+  width: 100%; padding: 9px 11px; border-radius: 6px;
+  background: rgba(11,16,23,0.6); color: var(--text-primary);
+  border: 1px solid var(--glass-border); font-family: var(--mono);
+}
+.login-error {
+  margin: 14px 0; padding: 10px 12px; border-radius: 6px; font-size: 12px;
+  color: var(--state-critical); background: rgba(240,69,63,0.10);
+  border: 1px solid rgba(240,69,63,0.35);
+}
+
+/* ---------- pending queue ---------- */
+.pending-row {
+  display: flex; gap: 14px; align-items: center; cursor: pointer;
+  padding: 11px 12px; border-radius: 7px; margin-bottom: 7px;
+  background: rgba(245,179,44,0.07); border: 1px solid rgba(245,179,44,0.25);
+}
+.pending-row:hover { background: rgba(245,179,44,0.13); }
+
+/* ---------- agent graph ---------- */
+.graph { display: flex; flex-direction: column; gap: 9px; }
+.node {
+  position: relative; padding: 11px 13px; border-radius: 8px;
+  border: 1px solid var(--glass-border); background: rgba(11,16,23,0.4);
+}
+.node.ran { border-color: rgba(53,214,232,0.32); background: rgba(53,214,232,0.06); }
+.node.parallel { margin-left: 26px; border-left: 2px solid rgba(255,122,26,0.4); }
+.node:not(:last-child)::after {
+  content: "↓"; position: absolute; left: 50%; bottom: -16px;
+  color: var(--text-faint); font-size: 11px;
+}
+.node-head { display: flex; align-items: baseline; gap: 9px; }
+.node-index { color: var(--text-faint); font-size: 10px; }
+.node-label { font-weight: 600; font-size: 13px; }
+.node-ms { margin-left: auto; font-size: 11px; color: var(--accent-signal); }
+.node-note { color: var(--text-faint); font-size: 11px; margin-top: 3px; }
+.node-summary { color: var(--text-muted); font-size: 12px; margin-top: 6px; line-height: 1.5; }
+.parallel-tag {
+  position: absolute; right: 11px; bottom: 8px; font-size: 9px;
+  color: var(--accent-molten); letter-spacing: 0.09em;
+}
