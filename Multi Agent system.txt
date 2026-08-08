@@ -1,0 +1,46 @@
+                    ┌──────────────────────────────────────────┐
+  UPLOAD  ─────────►│  INGESTION   validate · normalise · DQ   │
+  image + sensors   │              lineage · SYNTHETIC/REAL    │
+  + MES record      └───────────────────┬──────────────────────┘
+                                        ▼
+                    ┌──────────────────────────────────────────┐
+                    │  COMPONENT IDENTIFIER   (vision tier)    │
+                    │  "what part is this?" + confidence       │
+                    └───────────────────┬──────────────────────┘
+                            known pack? │ no
+                       ┌────────────────┴──────────────┐
+                       ▼ yes                           ▼
+              load existing pack          ┌────────────────────────────┐
+                       │                  │  DETECTOR SYNTHESIS  §4    │
+                       │                  │  generate → verify →       │
+                       │                  │  sandbox → holdout →       │
+                       │                  │  HUMAN APPROVES            │
+                       │                  └─────────────┬──────────────┘
+                       └───────────────┬────────────────┘
+                                       ▼
+        ┌──────────────────────────────────────────────────────────┐
+        │            ORCHESTRATOR (LangGraph, over QCState)        │
+        │  ┌──────────┬───────────────┬──────────┐                 │
+        │  │  VISION  │ PROCESS       │ CONTEXT  │  ← parallel     │
+        │  │ verifiers│ signature/    │ MES +    │                 │
+        │  │          │ generated det.│ live API │                 │
+        │  └──────────┴───────┬───────┴──────────┘                 │
+        │              ADJUDICATOR  ◄─ reflection: signals disagree│
+        │                     │        (deterministic verdict,     │
+        │                     │         LLM narrative streamed)    │
+        │              ROOT CAUSE  ◄─ Hybrid RAG, cited            │
+        │                     │                                    │
+        │              COST TRIAGE                                 │
+        │                     │                                    │
+        │              GUARDIAN  fail closed                       │
+        │                ┌────┴────┐                               │
+        │           HITL GATE ──► ACTION ──► LEARNING              │
+        │           interrupt()                                    │
+        └──────────────────────────────────────────────────────────┘
+
+
+
+
+
+
+
