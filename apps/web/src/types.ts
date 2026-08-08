@@ -56,6 +56,23 @@ export interface Inspection {
   is_synthetic: boolean;
   created_at: string;
   baseline: Baseline;
+  image_uri?: string | null;
+  /** Arrives asynchronously after the verdict. null = model has not answered yet. */
+  narrative?: string | null;
+  narrative_provenance?: NarrativeProvenance | null;
+  assigned_to_username?: string | null;
+  assigned_to_name?: string | null;
+  assigned_by_name?: string | null;
+  assigned_at?: string | null;
+}
+
+export interface NarrativeProvenance {
+  summary: string;
+  prompt_version: string;
+  degradations: string[];
+  latency_ms: number;
+  source: string;
+  model: string | null;
 }
 
 export interface Scenario {
@@ -74,4 +91,34 @@ export interface Metrics {
   p95_ms?: number;
   cost_at_risk?: number;
   currency?: string;
+}
+
+export interface DefectDetail {
+  defect_type: string;
+  severity: string;
+  location: string;
+  description: string;
+  confidence: number;
+}
+
+export interface VisionProvenance {
+  source: string;
+  producer: string;
+  tier: string | null;
+  model_id: string | null;
+  latency_ms: number | null;
+  degradations: string[];
+  prompt_version: string | null;
+}
+
+export interface VisionAnalysis {
+  defects_found: boolean;
+  defect_count: number;
+  defects: DefectDetail[];
+  component_identified: string;
+  overall_condition: string;
+  confidence: number;
+  recommendations: string[];
+  provenance: VisionProvenance;
+  image_dimensions: string;
 }

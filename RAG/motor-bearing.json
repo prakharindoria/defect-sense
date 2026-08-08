@@ -1,0 +1,362 @@
+[{
+    "type": "knowledge",
+    "doc_id": "SOP-MB-101",
+    "component_id": "motor_bearing",
+    "doc_type": "sop",
+    "title": "Vibration Signal Acquisition and Acceleration Peak Measurement",
+    "defect_classes": [
+        "bearing_wear",
+        "misalignment",
+        "cage_damage"
+    ],
+    "station": "MB-03",
+    "effective_date": "2025-01-15",
+    "version": "2.0",
+    "standard_ref": null,
+    "sections": [
+        {
+            "chunk_id": "SOP-MB-101#1.0",
+            "heading": "1.0 Sensor Mounting and Baseline Setup",
+            "text": "1. Mount the high-frequency triaxial accelerometer directly to the MB-03 drive-end bearing housing using the M8 threaded magnetic base. Ensure the contact surface is free of debris, painted buildup, or grease. 2. Verify transducer calibration date is within 12 months. Connect sensor lead lines to the high-speed data acquisition module DAQ-MB-01. 3. Configure the sampling rate to exactly 25.6 kHz to prevent aliasing up to the 10 kHz bandwidth limit. Set the acquisition duration to 12.0 seconds to achieve a minimum spectral resolution of 0.08 Hz per bin. 4. Initiate baseline background noise check while the motor is stationary; ensure RMS noise floor remains below 0.05 m/s²."
+        },
+        {
+            "chunk_id": "SOP-MB-101#2.0",
+            "heading": "2.0 Signal Evaluation and Kurtosis Calculation",
+            "text": "1. Start the drive motor and allow shaft speed to stabilize at 1480 rpm (24.67 Hz) ± 5 rpm under steady nominal load. 2. Execute acceleration timeseries record. Calculate total overall RMS acceleration over the full 10 Hz - 10 kHz band. Record values in g or m/s². 3. Calculate time-domain kurtosis (fourth standardized moment). For healthy 6208-2RS rolling bearings, baseline kurtosis values range from 2.8 to 3.2. 4. If kurtosis exceeds 4.5 while RMS acceleration remains below 1.8 m/s², log an incipient fault alert for outer race or inner race micro-spalling. 5. If overall RMS exceeds 4.5 m/s², immediately isolate the motor and trigger an emergency stop inspection."
+        }
+    ]
+},
+{
+    "type": "knowledge",
+    "doc_id": "SOP-MB-102",
+    "component_id": "motor_bearing",
+    "doc_type": "sop",
+    "title": "Infrared Temperature and Contact Thermocouple Verification",
+    "defect_classes": [
+        "lubrication_degraded",
+        "bearing_wear"
+    ],
+    "station": "MB-03",
+    "effective_date": "2025-01-20",
+    "version": "1.4",
+    "standard_ref": null,
+    "sections": [
+        {
+            "chunk_id": "SOP-MB-102#1.0",
+            "heading": "1.0 Thermal Inspection Sequence",
+            "text": "1. Prior to commencing contact readings, point calibrated thermal imaging camera IR-CAM-02 at the drive-end bearing housing from a fixed 0.5-meter radius. Ensure emissivity setting is fixed at 0.95 for cast iron housing surface. 2. Record peak surface temperature across the 6208-2RS outer ring housing perimeter. Baseline operating temperature under steady-state continuous duty (1480 rpm) is 58°C to 68°C at ambient 22°C. 3. Apply contact thermocouple probe TC-04 directly into the secondary thermal well drilled in station MB-03 housing. Hold for 30 seconds until stabilized. 4. Compare contact probe reading to infrared thermal map. Discrepancies greater than 3.0°C require thermal camera recalibration and surface cleaning."
+        },
+        {
+            "chunk_id": "SOP-MB-102#2.0",
+            "heading": "2.0 Thermal Excursion Thresholds",
+            "text": "1. Housing temperature rise exceeding 1.2°C per minute during continuous operation indicates acute film breakdown or excessive grease fill. 2. Flag warning alert level 1 if housing temperature crosses 75°C. Check grease fill interval history immediately. 3. Flag critical alert level 2 if housing temperature exceeds 88°C. Initiate controlled motor shutdown within 15 minutes to prevent catastrophic raceway galling. 4. Document all temperature excursions exceeding 75°C in logbook MB-03-TEMP with ambient room baseline temperature recorded concurrently."
+        }
+    ]
+},
+{
+    "type": "knowledge",
+    "doc_id": "SOP-MB-103",
+    "component_id": "motor_bearing",
+    "doc_type": "sop",
+    "title": "Visual Seal Condition and Lubricant Discoloration Check",
+    "defect_classes": [
+        "contamination_ingress",
+        "lubrication_degraded"
+    ],
+    "station": "MB-03",
+    "effective_date": "2025-02-01",
+    "version": "2.1",
+    "standard_ref": null,
+    "sections": [
+        {
+            "chunk_id": "SOP-MB-103#1.0",
+            "heading": "1.0 Nitrile Rubber (2RS) Seal Integrity Inspection",
+            "text": "1. Isolate motor drive power following LOTO procedure MB-LOTO-01. Allow drive-end bearing area to cool below 40°C. 2. Clean external housing face with lint-free wiper. Inspect the dual synthetic nitrile rubber contact seals (2RS) under 10x illuminated magnification MAG-01. 3. Check for circumferential seal lip abrasion, thermal hardening, cracking, or axial displacement from the outer ring groove. 4. Inspect the seal gap for extruded grease ring condition. A dry, crumbly black ring indicates thermal degradation; a watery or emulsified grease ring indicates liquid or moisture contamination ingress. 5. Measure radial gap or seal deformation using feeler gauge set FG-02. Any seal gap opening exceeding 0.15 mm requires immediate seal and bearing replacement."
+        },
+        {
+            "chunk_id": "SOP-MB-103#2.0",
+            "heading": "2.0 Lubricant Sampling and Color Assessment",
+            "text": "1. Extract 2.0 mL of grease sample from the secondary drain relief port using clean acrylic sampling syringe LUB-SYN-01. 2. Spread grease sample on white inspection card LUB-CARD-01 to a uniform thickness of 0.5 mm. 3. Compare grease coloration against standard color chart ISO-LUB-COL. Fresh Polyurea-based grease is light beige (Level 0). Dark brown (Level 3) indicates moderate thermal oxidation. Pitch black with particulate grit (Level 5) indicates severe degradation or particulate ingress. 4. Touch sample with magnet wand MAG-W-01 to check for ferrous debris accumulation. Log presence of visible metallic flakes immediately."
+        }
+    ]
+},
+{
+    "type": "knowledge",
+    "doc_id": "SOP-MB-104",
+    "component_id": "motor_bearing",
+    "doc_type": "sop",
+    "title": "Laser Alignment Setup and Shaft Runout Verification",
+    "defect_classes": [
+        "misalignment",
+        "looseness"
+    ],
+    "station": "MB-03",
+    "effective_date": "2025-02-10",
+    "version": "3.0",
+    "standard_ref": null,
+    "sections": [
+        {
+            "chunk_id": "SOP-MB-104#1.0",
+            "heading": "1.0 Laser Alignment Target Fixturing",
+            "text": "1. Attach laser transmitter unit L-ALIGN-M to motor drive-end shaft and receiver unit L-ALIGN-S to driven pump shaft. Ensure shaft separation gap is 120 mm ± 1 mm. 2. Enter geometry dimensions into control head ALIGN-TOUCH-01: distance from laser M to S (120 mm), distance from M to front motor foot (210 mm), distance from front foot to rear foot (380 mm). 3. Rotate shafts simultaneously by hand through 360 degrees, recording readings at 9 o'clock, 12 o'clock, and 3 o'clock positions. Ensure electronic inclination sensors indicate rotational validity. 4. Verify parallel offset is less than 0.05 mm and angular misalignment is less than 0.04 mm/100 mm."
+        },
+        {
+            "chunk_id": "SOP-MB-104#2.0",
+            "heading": "2.0 Shaft Radial Runout Measurement",
+            "text": "1. Mount digital dial indicator EDI-01 with magnetic base to motor frame, positioning contact tip perpendicularly against the drive-end shaft extension. 2. Slowly rotate shaft manually through two full revolutions while monitoring peak-to-peak dial indicator deflection. 3. Maximum permissible total indicator reading (TIR) for radial shaft runout on the 40 mm diameter 6208 seat area is 0.012 mm. 4. If TIR exceeds 0.025 mm, check for shaft bending or uneven mounting bolt torque before proceeding with dynamic vibration baseline capture."
+        }
+    ]
+},
+{
+    "type": "knowledge",
+    "doc_id": "SOP-MB-105",
+    "component_id": "motor_bearing",
+    "doc_type": "sop",
+    "title": "Fastener Torque and Housing Looseness Verification",
+    "defect_classes": [
+        "looseness"
+    ],
+    "station": "MB-03",
+    "effective_date": "2025-02-15",
+    "version": "1.2",
+    "standard_ref": null,
+    "sections": [
+        {
+            "chunk_id": "SOP-MB-105#1.0",
+            "heading": "1.0 Foot Bolt and End-Cover Torque Audit",
+            "text": "1. Obtain calibrated click-type torque wrench TW-100 (range 20-150 Nm, calibrated to ISO 6789). 2. Inspect four M16 grade 8.8 motor hold-down bolts at station MB-03. Apply torque wrench set to 175 Nm in a cross-pattern. Verify that no bolt turns before torque wrench clicks. 3. Inspect six M8 drive-end bearing housing retainer cap screws. Apply torque wrench set to 25 Nm. A turn angle exceeding 15 degrees prior to torque click indicates joint relaxation or thread stripping. 4. Inspect motor foot shim pack for soft foot conditions using 0.05 mm feeler gauge. If gauge slips under any foot corner while unbolted, re-shim following procedure MANUAL-MB-302."
+        }
+    ]
+},
+{
+    "type": "knowledge",
+    "doc_id": "SOP-MB-106",
+    "component_id": "motor_bearing",
+    "doc_type": "sop",
+    "title": "FFT Spectrum Peak Extraction and Fault Frequency Matching",
+    "defect_classes": [
+        "bearing_wear",
+        "cage_damage",
+        "misalignment"
+    ],
+    "station": "MB-03",
+    "effective_date": "2025-02-22",
+    "version": "2.2",
+    "standard_ref": null,
+    "sections": [
+        {
+            "chunk_id": "SOP-MB-106#1.0",
+            "heading": "1.0 Calculation of Characteristic Defect Frequencies",
+            "text": "1. Confirm motor running speed $f_r = 1480 / 60 = 24.67\\text{ Hz}$. 2. For standard 6208-2RS bearing geometry (8 rolling elements, pitch diameter $D_m = 60\\text{ mm}$, ball diameter $d = 11.91\\text{ mm}$, contact angle $\\alpha = 0^\\circ$): - Ball Pass Frequency Outer Race (BPFO): $3.58 \\times f_r = 88.31\\text{ Hz}$. - Ball Pass Frequency Inner Race (BPFI): $4.42 \\times f_r = 109.02\\text{ Hz}$. - Ball Spin Frequency (BSF): $2.32 \\times f_r = 57.23\\text{ Hz}$. - Fundamental Train Frequency (FTF / Cage): $0.45 \\times f_r = 11.10\\text{ Hz}$. 3. Configure FFT analysis window: Hanning window, 3200 lines, 66% overlap, 8 spectral averages."
+        },
+        {
+            "chunk_id": "SOP-MB-106#2.0",
+            "heading": "2.0 Spectral Band Evaluation Rules",
+            "text": "1. Search for discrete spectral peaks within ± 1.0 Hz of calculated BPFO (88.3 Hz) and its harmonics ($2 \\times \\text{BPFO} = 176.6\\text{ Hz}$, $3 \\times \\text{BPFO} = 264.9\\text{ Hz}$). 2. Check for 2X running speed amplitude ($2 \\times f_r = 49.33\\text{ Hz}$). If peak at 49.33 Hz exceeds 2.2 m/s² while 1X ($24.67\\text{ Hz}$) remains moderate, classify primary fault as mechanical misalignment. 3. Search for cage fault frequency (FTF = 11.10 Hz) sidebands around BSF or running frequency. Peaks at 11.10 Hz exceeding 0.8 m/s² indicate retainer/cage fracture or excessive pocket wear."
+        }
+    ]
+},
+{
+    "type": "knowledge",
+    "doc_id": "SOP-MB-107",
+    "component_id": "motor_bearing",
+    "doc_type": "sop",
+    "title": "Manual Regreasing Quantity and Pressure Control",
+    "defect_classes": [
+        "lubrication_degraded",
+        "lubrication_interval_exceeded"
+    ],
+    "station": "MB-03",
+    "effective_date": "2025-03-01",
+    "version": "1.1",
+    "standard_ref": null,
+    "sections": [
+        {
+            "chunk_id": "SOP-MB-107#1.0",
+            "heading": "1.0 Regreasing Volume Calculation",
+            "text": "1. Calculate exact grease replenishment volume $G$ in grams for 6208-2RS bearing using standard formula $G = 0.005 \\times D \\times B$, where $D = 80\\text{ mm}$ (outer diameter) and $B = 18\\text{ mm}$ (width). $G = 0.005 \\times 80 \\times 18 = 7.2\\text{ grams}$. 2. Calibrate manual grease gun GRE-GUN-01 on balance scale BAL-01. Verify stroke weight output; typical yield is 1.2 grams per stroke. Set target to exactly 6 full strokes. 3. Clean grease zerk fitting MB-03-Z1 with solvent wipe. Remove lower drain plug to allow old grease expulsion during injection. 4. Inject Polyurea synthetic grease (NLGI Grade 2) slowly at a rate of no more than 3 seconds per stroke to avoid over-pressurizing contact seals."
+        }
+    ]
+},
+{
+    "type": "knowledge",
+    "doc_id": "SOP-MB-108",
+    "component_id": "motor_bearing",
+    "doc_type": "sop",
+    "title": "Demodulation and Envelope Spectrum Analysis for Micro-Spalling",
+    "defect_classes": [
+        "bearing_wear",
+        "contamination_ingress"
+    ],
+    "station": "MB-03",
+    "effective_date": "2025-03-05",
+    "version": "2.0",
+    "standard_ref": null,
+    "sections": [
+        {
+            "chunk_id": "SOP-MB-108#1.0",
+            "heading": "1.0 High-Frequency Enveloping Setup",
+            "text": "1. Load raw acceleration signal captured at 25.6 kHz sampling rate into analytical software VIB-PROC-01. 2. Apply digital bandpass filter across the 2.0 kHz to 10.0 kHz high-frequency resonance band to isolate structural impact ringing from low-frequency rotational imbalance. 3. Apply full-wave rectification to the filtered bandpass output. 4. Pass rectified signal through a low-pass smoothing filter cut off at 500 Hz to extract the low-frequency modulation envelope. 5. Perform FFT transformation on the enveloped signal to produce the envelope spectrum."
+        },
+        {
+            "chunk_id": "SOP-MB-108#2.0",
+            "heading": "2.0 Enveloped Peak Interpretation",
+            "text": "1. Examine envelope spectrum for clear harmonic series corresponding to BPFO (88.3 Hz) or BPFI (109.0 Hz). 2. If envelope BPFO peak amplitude exceeds 0.35 m/s² peak, classify condition as early stage micro-spalling on raceway. 3. Check for high noise floor without clear harmonics in the envelope spectrum; elevated broadband enveloped energy between 100 Hz and 1000 Hz with high raw kurtosis (> 5.0) indicates particulate contamination ingress grinding within the raceway track."
+        }
+    ]
+},
+{
+    "type": "knowledge",
+    "doc_id": "SOP-MB-109",
+    "component_id": "motor_bearing",
+    "doc_type": "sop",
+    "title": "Ultrasonic Acoustic Emission Detection for Lubrication Thinning",
+    "defect_classes": [
+        "lubrication_degraded"
+    ],
+    "station": "MB-03",
+    "effective_date": "2025-03-10",
+    "version": "1.0",
+    "standard_ref": null,
+    "sections": [
+        {
+            "chunk_id": "SOP-MB-109#1.0",
+            "heading": "1.0 Airborne and Structure-Borne Ultrasonic Probe Setup",
+            "text": "1. Connect structure-borne contact ultrasound sensor ULT-PROBE-01 to central instrument ULT-LOG-02. Set center frequency tuning to 38.4 kHz. 2. Place magnetic probe tip onto motor bearing housing MB-03 at the top vertical centerline position. 3. Record root mean square microvolt level (dB µV) over a 20-second continuous sampling window while motor operates under nominal 1480 rpm load. 4. Healthy baseline ultrasound level for 6208-2RS operating with intact grease film is 12 dB µV to 18 dB µV above baseline sensor noise. 5. An increase of ultrasound signal level to 28-35 dB µV without accompanying low-frequency vibration changes signals boundary lubrication regimes and lubricant film breakdown."
+        }
+    ]
+},
+{
+    "type": "knowledge",
+    "doc_id": "SOP-MB-110",
+    "component_id": "motor_bearing",
+    "doc_type": "sop",
+    "title": "Post-Maintenance Run-In and Acceptance Inspection",
+    "defect_classes": [
+        "bearing_wear",
+        "misalignment",
+        "looseness"
+    ],
+    "station": "MB-03",
+    "effective_date": "2025-03-15",
+    "version": "1.3",
+    "standard_ref": null,
+    "sections": [
+        {
+            "chunk_id": "SOP-MB-110#1.0",
+            "heading": "1.0 Post-Replacement Verification Sequence",
+            "text": "1. Following installation of new 6208-2RS bearing, perform manual shaft rotation check to confirm zero binding or tactile catch. 2. Initiate uncoupled motor test run for 15 minutes at 1480 rpm. Record baseline overall RMS vibration acceleration; overall velocity must remain below 1.1 mm/s RMS (ISO 20816 Class I/II standard). 3. Couple motor to driven load following SOP-MB-104. Run loaded machine for 60 minutes. 4. Monitor housing temperature every 10 minutes using TC-04 probe. Ensure thermal equilibrium is achieved with total temperature stabilization under 65°C. 5. Capture final baseline spectral record and archive in quality database MB-03-QA for future trend comparisons."
+        }
+    ]
+},
+{
+    "type": "knowledge",
+    "doc_id": "SOP-MB-111",
+    "component_id": "motor_bearing",
+    "doc_type": "sop",
+    "title": "Shaft Fit and Housing Tolerance Dimensional Inspection",
+    "defect_classes": [
+        "looseness",
+        "bearing_wear"
+    ],
+    "station": "MB-03",
+    "effective_date": "2025-03-20",
+    "version": "1.0",
+    "standard_ref": null,
+    "sections": [
+        {
+            "chunk_id": "SOP-MB-111#1.0",
+            "heading": "1.0 Precision Bore and Journal Micrometer Gauging",
+            "text": "1. Allow removed motor shaft and end-bell housing to acclimate to temperature-controlled measurement room at 20°C ± 1°C for 2 hours. 2. Measure drive-end shaft bearing journal diameter using calibrated 25-50 mm outside micrometer MIC-02 at 4 positions (two orthogonal planes, two axial positions). 3. The specified shaft journal tolerance for 6208 seat (40 mm nominal) is k5 (+0.009 mm to +0.015 mm interference fit). Journal diameter must measure between 40.009 mm and 40.015 mm. 4. Measure end-bell housing bore diameter using three-point internal micrometer IN-MIC-01. Specified housing bore tolerance is H7 (80.000 mm to 80.030 mm). Bore exceeding 80.045 mm creates loose outer ring fit, causing fretting wear and 1X/2X mechanical looseness response."
+        }
+    ]
+},
+{
+    "type": "knowledge",
+    "doc_id": "SOP-MB-112",
+    "component_id": "motor_bearing",
+    "doc_type": "sop",
+    "title": "End-Play and Axial Clearance Verification Procedure",
+    "defect_classes": [
+        "looseness",
+        "misalignment"
+    ],
+    "station": "MB-03",
+    "effective_date": "2025-03-25",
+    "version": "1.1",
+    "standard_ref": null,
+    "sections": [
+        {
+            "chunk_id": "SOP-MB-112#1.0",
+            "heading": "1.0 Internal Radial and Installed Axial Clearance Check",
+            "text": "1. Unmounted 6208-2RS deep groove ball bearings possess Normal (N) internal radial clearance of 8 to 23 µm. Verify radial clearance prior to assembly using feeler blade set FG-03 inserted between rolling elements and outer raceway. 2. Mount bearing onto shaft using induction heater IND-01 set to 110°C. Never exceed 120°C to avoid damaging synthetic rubber seals. 3. Once cooled, install assembly into housing. Mount dial indicator EDI-02 to frame with probe tip seated against shaft shoulder. 4. Apply 100 N axial force push-pull manually along shaft axis. Record total axial movement (end-play). Permissible installed axial float range is 0.05 mm to 0.15 mm for non-locating arrangement. Float under 0.02 mm indicates axial pinching causing premature thermal loading."
+        }
+    ]
+},
+{
+    "type": "knowledge",
+    "doc_id": "SOP-MB-113",
+    "component_id": "motor_bearing",
+    "doc_type": "sop",
+    "title": "Grease Sampling and Contamination Particle Counting",
+    "defect_classes": [
+        "contamination_ingress",
+        "lubrication_degraded"
+    ],
+    "station": "MB-03",
+    "effective_date": "2025-03-30",
+    "version": "1.0",
+    "standard_ref": null,
+    "sections": [
+        {
+            "chunk_id": "SOP-MB-113#1.0",
+            "heading": "1.0 Laboratory Sample Preparation and Microscopic Analysis",
+            "text": "1. Transfer 1.0 gram grease sample obtained per SOP-MB-103 into clean glass beaker. Add 20 mL reagent-grade toluene solvent to dissolve base oil matrix. 2. Filter solution through a 0.85-micron membrane filter disk using vacuum filtration assembly VAC-01. 3. Wash filter disk with clean solvent and dry in oven at 60°C for 15 minutes. 4. Mount membrane disk under optical microscope MIC-LAB-01 under 100x magnification. Count particulate contaminant solids across 10 random field grids. 5. Classify particles per ISO 4406 sizing bands (> 5 µm, > 15 µm, > 25 µm). Presence of hard silica or mineral particles exceeding 25 µm at counts > 100 per gram indicates catastrophic seal failure."
+        }
+    ]
+},
+{
+    "type": "knowledge",
+    "doc_id": "SOP-MB-114",
+    "component_id": "motor_bearing",
+    "doc_type": "sop",
+    "title": "Shift Change Preventative Maintenance Audit Procedure",
+    "defect_classes": [
+        "lubrication_degraded",
+        "lubrication_interval_exceeded"
+    ],
+    "station": "MB-03",
+    "effective_date": "2025-04-01",
+    "version": "2.0",
+    "standard_ref": null,
+    "sections": [
+        {
+            "chunk_id": "SOP-MB-114#1.0",
+            "heading": "1.0 Digital Work-Order Reconciliation at Shift Handoff",
+            "text": "1. At each shift handoff (06:00, 14:00, 22:00), incoming shift supervisor shall log into PM system portal PM-SYS-01 and pull pending lube route tasks for station MB-03. 2. Verify physical completion of all scheduled 500-hour and 1000-hour grease replenishment tickets against digital sign-offs. 3. Cross-check grease gun dispenser counters against station MB-03 physical log sheet MB-03-LOG. 4. Any unexecuted lubrication route ticket from the preceding shift must be escalated as a priority 1 task and completed within 2 hours of shift start. 5. Document any missed lubrication task in shift audit report AUD-SHIFT-01, recording assigned shift ID (A, B, or C) and assigned technician ID for traceability."
+        }
+    ]
+},
+{
+    "type": "knowledge",
+    "doc_id": "STD-MB-201",
+    "component_id": "motor_bearing",
+    "doc_type": "standard_summary",
+    "title": "ISO 20816 Mechanical Vibration Evaluation Summary",
+    "defect_classes": [
+        "bearing_wear",
+        "misalignment",
+        "looseness"
+    ],
+    "station": "MB-03",
+    "effective_date": "2024-06-01",
+    "version": "1.0",
+    "standard_ref": "ISO 20816",
+    "sections": [
+        {
+            "chunk_id": "STD-MB-201#1.0",
+            "heading": "Scope and Permissible Vibration Velocity Limits",
+            "text": "Paraphrased summary, not an extract. Consult the published standard for normative requirements. This standard outlines framework guidelines for measuring and evaluating mechanical vibration on non-rotating parts of industrial electric motors and rotating equipment. For electric motors driving industrial machines in the 15 kW to 75 kW power rating category (Class II industrial machinery), evaluation criteria are established using broad-band RMS vibration velocity (mm/s) over the 10 Hz to 1000 Hz frequency range. Zone A (newly commissioned machines) requires vibration levels below 1.4 mm/s RMS. Zone B (acceptable for long-term continuous operation) permits vibration up to 2.8 mm/s RMS. Zone C (unsatisfactory for continuous operation, alert limit) spans 2.8 mm/s to 4.5 mm/s RMS. Zone D (unacceptable, immediate trip action required) is triggered when overall broadband vibration velocity exceeds 4.5 mm/s RMS."
+        }
+    ]
+}]

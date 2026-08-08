@@ -17,6 +17,7 @@ Design notes worth defending:
 
 from __future__ import annotations
 
+import logging
 import os
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
@@ -35,6 +36,7 @@ RBAC_PATH = Path("config/rbac.yaml")
 ALGORITHM = "HS256"
 
 _hasher = PasswordHasher()
+_log = logging.getLogger(__name__)
 
 
 class AuthError(Exception):
@@ -155,20 +157,112 @@ def verify_password(password: str, password_hash: str) -> bool:
 # even for a demo, because a shortcut here is the one a reviewer will find.
 # Documented openly: these are demo credentials for synthetic data, not secrets.
 DEMO_PASSWORD = os.environ.get("FORGE_DEMO_PASSWORD", "forge2026")
+USERNAME_DOMAIN = "@ds.com"
 
 _DEMO_USERS: tuple[tuple[str, str, Role], ...] = (
-    ("ravi", "Ravi Kulkarni", Role.SHOP_FLOOR_WORKER),
-    ("priya", "Priya Sharma", Role.QA),
-    ("sam", "Sam Mehta", Role.ADMIN),
+    ("ravi@ds.com", "Ravi Verma", Role.SHOP_FLOOR_WORKER),
+    ("aarav@ds.com", "Aarav Singh", Role.SHOP_FLOOR_WORKER),
+    ("priya@ds.com", "Priya Patel", Role.QA),
+    ("sam@ds.com", "Rajesh Sharma", Role.ADMIN),
 )
 
+_DYNAMIC_USERS: dict[str, User] = {}
 
-@lru_cache(maxsize=1)
+
+def normalize_username(value: str) -> str:
+    """Canonicalize the human account identifier used by the UI and database."""
+    username = value.strip().lower()
+    if not username:
+        raise ValueError("Username cannot be empty")
+    if "@" not in username:
+        return f"{username}{USERNAME_DOMAIN}"
+    if not username.endswith(USERNAME_DOMAIN):
+        raise ValueError(f"Username must use the {USERNAME_DOMAIN} domain")
+    return username
+
+
 def user_store() -> dict[str, User]:
-    return {
-        username: User(username, display, role, hash_password(DEMO_PASSWORD))
-        for username, display, role in _DEMO_USERS
-    }
+    if not _DYNAMIC_USERS:
+        for username, display, role in _DEMO_USERS:
+            _DYNAMIC_USERS[username] = User(username, display, role, hash_password(DEMO_PASSWORD))
+    return _DYNAMIC_USERS
+
+
+async def sync_users_with_mongo(storage: Any) -> None:
+    """Seed missing demo users and load the database-backed user directory.
+
+    The database is authoritative.  In particular, demo accounts are inserted
+    with ``$setOnInsert`` so restarting the API cannot replace a user-managed
+    password hash with a freshly generated demo hash.
+    """
+    if not storage:
+        return
+    db = getattr(storage, "_db", None) or getattr(getattr(storage, "documents", None), "_db", None)
+    if db is None:
+        return
+    try:
+        # Existing installations used bare names. Migrate them once, preserving
+        # the password hash and every other stored attribute.
+        existing = [document async for document in db["users"].find({}, {"_id": 0})]
+        for document in existing:
+            legacy_name = str(document.get("username", ""))
+            canonical_name = normalize_username(legacy_name)
+            if legacy_name == canonical_name:
+                continue
+            if await db["users"].find_one({"username": canonical_name}):
+                _log.warning("auth.username_migration_conflict", extra={"username": legacy_name})
+                continue
+            await db["users"].update_one(
+                {"username": legacy_name},
+                {"$set": {"username": canonical_name, "_key": canonical_name}},
+            )
+
+        # Seed only the declared demo users.  Do not iterate the mutable cache:
+        # it also contains registered users loaded from a previous lifecycle.
+        for username, display_name, role in _DEMO_USERS:
+            demo_user = User(username, display_name, role, hash_password(DEMO_PASSWORD))
+            doc = {
+                "username": demo_user.username,
+                "display_name": demo_user.display_name,
+                "role": demo_user.role.value,
+                "password_hash": demo_user.password_hash,
+            }
+            await db["users"].update_one(
+                {"username": demo_user.username}, {"$setOnInsert": doc}, upsert=True
+            )
+
+        # The cache mirrors, but never overrides, the persisted directory.
+        _DYNAMIC_USERS.clear()
+        cursor = db["users"].find({}, {"_id": 0})
+        async for doc in cursor:
+            try:
+                role_enum = Role(doc["role"])
+                _DYNAMIC_USERS[doc["username"]] = User(
+                    username=doc["username"],
+                    display_name=doc["display_name"],
+                    role=role_enum,
+                    password_hash=doc["password_hash"],
+                )
+            except Exception as e:
+                _log.warning("auth.mongo_user_load_skip", extra={"error": str(e)})
+    except Exception as exc:
+        _log.warning("auth.mongo_user_sync_failed", extra={"error": str(exc)})
+
+
+def register_user(username: str, display_name: str, role: Role, password: str = DEMO_PASSWORD) -> User:
+    """Validate and construct a new user without claiming it was persisted."""
+    username_clean = normalize_username(username)
+    store = user_store()
+    if username_clean in store:
+        raise ValueError(f"User '{username_clean}' already exists")
+    return User(username_clean, display_name.strip() or username_clean, role, hash_password(password))
+
+
+def cache_user(user: User) -> None:
+    """Expose a user to token refresh only after durable persistence succeeds."""
+    user_store()[user.username] = user
+
+
 
 
 def authenticate(username: str, password: str) -> User:
@@ -177,7 +271,11 @@ def authenticate(username: str, password: str) -> User:
     Always raises the same error for an unknown user and a wrong password, so
     the response cannot be used to enumerate valid usernames.
     """
-    user = user_store().get(username.strip().lower())
+    try:
+        username = normalize_username(username)
+    except ValueError:
+        raise AuthError("invalid username or password") from None
+    user = user_store().get(username)
     if user is None or not verify_password(password, user.password_hash):
         raise AuthError("invalid username or password")
     return user

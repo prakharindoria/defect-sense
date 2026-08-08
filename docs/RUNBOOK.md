@@ -138,6 +138,15 @@ a multimodal payload for a text-only model, drops the image, and returns HTTP
 200 — which made `llama-3.2-3b` report `vision: yes` until this was fixed. A
 capability probe that reports a false positive is worse than no probe.
 
+To compare candidate models rather than guess which to use:
+
+```bash
+python -m forge.ops.model_sweep
+```
+
+Probes every candidate for reachability, JSON mode, **genuine** vision and
+latency, then you pick from numbers. `--all` sweeps the full catalogue.
+
 Measured on this machine with Ollama only:
 
 ```
@@ -207,19 +216,49 @@ First run installs npm dependencies automatically. Then open:
 The UI proxies `/api` and `/ws` to the backend, so the browser talks to one
 origin and there is no CORS to configure.
 
+### Sign in — three roles, password `forge2026`
+
+Each role is a genuinely different product. The login screen has one-click
+shortcuts so you can switch between them fast.
+
+| User | Role | Lands on | Can submit? | Sees agent workflow? | Admin? |
+|---|---|---|---|---|---|
+| `ravi` | Shop Floor | `/station` | ✗ 403 | ✗ 403 | ✗ 403 |
+| `priya` | QA | `/dashboard` | ✓ | ✓ | ✗ 403 |
+| `sam` | Admin | `/admin` | ✓ | ✓ | ✓ |
+
+Those 403s are enforced **at the API**, not by hiding links. Hitting the
+endpoint directly with a shop-floor token still fails. Verified end to end.
+
+**Ravi (shop floor)** sees only the andon board, the current verdict and an
+acknowledge button — no cost model, no reasoning trace. An operator reading a
+reasoning trace is an operator not watching the line.
+
+**Priya (QA)** gets the queue of decisions awaiting a human, full evidence, and
+the agent workflow.
+
+**Sam (admin)** gets the live model capability matrix, tier resolution and
+health — but **cannot override a quality verdict**. Separation of duties is
+asserted at boot, so no single account can weaken a threshold and then pass the
+part it now permits.
+
 ### What to click
 
-1. **Nominal run** → ▶ Run inspection. Verdict **PASS**, disposition ACCEPT,
-   ~3 ms. Show the system working normally first — that boring beat is what
-   makes the next one credible.
-2. **Contaminated threads** → ▶ Run inspection. Verdict **DEFECT** with a
+1. Sign in as **priya** → **Inspect** → **Nominal run** → ▶ Run.
+   Verdict **PASS**, disposition ACCEPT, ~3 ms. Show it working normally first —
+   that boring beat is what makes the next one credible.
+2. **Contaminated threads** → ▶ Run. Verdict **DEFECT** with a
    **⚠ FUSION-ONLY** badge, while the fastener table shows the endpoint
    *in spec* and the verifiers passing. Both signals individually say PASS.
 3. Read the Torque-Angle Signature panel: the curve **ends inside the green spec
    band** but its shape departs from the dashed learned baseline — knee delayed,
    elastic slope shallow.
-4. **Missing fastener** → caught by the deterministic geometric verifier
+4. **Agent Workflow** → see the five nodes, with Vision and Process Sentinel
+   marked *parallel*: their outputs meet only at the Adjudicator, which is where
+   the fusion-only defect becomes visible.
+5. **Missing fastener** → caught by the deterministic geometric verifier
    instead, at confidence 0.99. Different mechanism, same pipeline.
+6. Sign out, sign in as **ravi** → the same line, a much narrower product.
 
 ### Verified end to end
 

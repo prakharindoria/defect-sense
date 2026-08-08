@@ -18,12 +18,23 @@ interface AuthState {
   user: Identity | null;
   ready: boolean;
   login: (username: string, password: string) => Promise<void>;
+  register: (username: string, display_name: string, role: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   can: (permission: string) => boolean;
   authFetch: (input: string, init?: RequestInit) => Promise<Response>;
 }
 
 const Ctx = createContext<AuthState | null>(null);
+
+let activeToken: string | null = null;
+
+export function getAccessToken(): string | null {
+  return activeToken;
+}
+
+export function setAccessToken(token: string | null) {
+  activeToken = token;
+}
 
 /**
  * The access token is held in a ref — memory only, never localStorage, where
@@ -39,6 +50,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const apply = (data: { access_token: string; user: Identity }) => {
     token.current = data.access_token;
+    setAccessToken(data.access_token);
     setUser(data.user);
   };
 
@@ -60,6 +72,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!res.ok) {
       const body = await res.json().catch(() => ({}));
       throw new Error(body.detail ?? "Sign in failed");
+    }
+    const data = await res.json();
+    apply(data);
+
+    // Sync all actors with database after successful login
+    try {
+      await fetch("/api/v1/auth/sync", {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          Authorization: `Bearer ${data.access_token}`,
+        },
+      }).catch(() => {
+        // Non-fatal: sync failure should not block login
+      });
+    } catch {
+      // Silently handle sync errors
+    }
+  }, []);
+
+  const register = useCallback(async (username: string, display_name: string, role: string, password: string) => {
+    const res = await fetch("/api/v1/auth/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ username, display_name, role, password }),
+    });
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      throw new Error(body.detail ?? "Registration failed");
     }
     apply(await res.json());
   }, []);
@@ -105,8 +147,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 
   const value = useMemo(
-    () => ({ user, ready, login, logout, can, authFetch }),
-    [user, ready, login, logout, can, authFetch],
+    () => ({ user, ready, login, register, logout, can, authFetch }),
+    [user, ready, login, register, logout, can, authFetch],
   );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

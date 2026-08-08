@@ -1,0 +1,327 @@
+[{
+    "type": "knowledge",
+    "doc_id": "SOP-WA-101",
+    "component_id": "wheel_assembly",
+    "doc_type": "sop",
+    "title": "WA-01 Inspection Station Setup and Torque-Angle Calibration",
+    "defect_classes": [
+        "under_torque",
+        "over_torque"
+    ],
+    "station": "WA-01",
+    "effective_date": "2024-06-01",
+    "version": "1.0",
+    "standard_ref": null,
+    "sections": [
+        {
+            "chunk_id": "SOP-WA-101#1.0",
+            "heading": "1.0 Setup Sequence",
+            "text": "1. Ensure station WA-01 power rail is energized and pneumatic pressure is stabilized at 6.2 bar (+/- 0.2 bar). 2. Power on the multi-spindle torque controller unit (DC Tool Controller Model TC-800) and verify communication LED is solid green. 3. Perform zero-offset calibration for torque transducers T-01 through T-05. Acceptable zero offset range is -0.15 Nm to +0.15 Nm. If offset exceeds +/- 0.30 Nm, perform manual recalibration per tool manual. 4. Mount calibration standard block CAL-HUB-120 to station fixture location. 5. Run automated test sweep sequence TS-001. Verify measured peak torque across all five channels reads within 117.5 Nm +/- 1.0 Nm. 6. Inspect multi-spindle drive sockets for mechanical wear, debris, or metal shavings. Clean using clean compressed air."
+        }
+    ]
+},
+{
+    "type": "knowledge",
+    "doc_id": "SOP-WA-102",
+    "component_id": "wheel_assembly",
+    "doc_type": "sop",
+    "title": "Automated Torque-vs-Angle Curve Processing and Knee Detection",
+    "defect_classes": [
+        "thread_contamination",
+        "under_torque",
+        "over_torque"
+    ],
+    "station": "WA-01",
+    "effective_date": "2024-06-15",
+    "version": "1.1",
+    "standard_ref": null,
+    "sections": [
+        {
+            "chunk_id": "SOP-WA-102#2.1",
+            "heading": "2.1 Torque-Angle Processing",
+            "text": "1. The automated fastening system applies a threshold torque of 15 Nm to seat M14x1.5 fasteners against the wheel hub flange. 2. Upon reaching threshold torque, angle recording begins at zero degrees. The controller drives the fastener at 120 RPM until reaching target snug torque of 50 Nm. 3. Calculate elastic slope between 50 Nm and 100 Nm. Target slope is 3.2 Nm/deg (+/- 0.4 Nm/deg). 4. Identify torque-angle knee, defined as the transition point where slope increases to terminal gradient. Baseline knee angle occurs between 12.0 and 16.0 degrees. 5. If the knee angle occurs after 18.0 degrees while final torque lands within 110-125 Nm, flag defect class thread_contamination immediately. 6. Abort rundown if slope falls below 2.2 Nm/deg before 80 Nm."
+        }
+    ]
+},
+{
+    "type": "knowledge",
+    "doc_id": "SOP-WA-103",
+    "component_id": "wheel_assembly",
+    "doc_type": "sop",
+    "title": "Visual Checks for Wheel Variant and Pitch Circle Diameter Validation",
+    "defect_classes": [
+        "wrong_wheel_variant",
+        "missing_fastener"
+    ],
+    "station": "WA-01",
+    "effective_date": "2024-07-01",
+    "version": "2.0",
+    "standard_ref": null,
+    "sections": [
+        {
+            "chunk_id": "SOP-WA-103#3.1",
+            "heading": "3.1 Optical Vision System Inspection Procedure",
+            "text": "1. Trigger camera array CAM-WA01-A and CAM-WA01-B upon vehicle carrier arrival and proximity sensor engagement. 2. Optical system evaluates wheel pattern against MES job routing ticket. Verify wheel variant matches barcode payload. 3. Confirm 5-hole pattern along 120 mm bolt circle diameter (+/- 0.25 mm pitch tolerance). 4. Measure angular spacing between adjacent fastener holes. Nominal angle is 72.0 degrees (+/- 0.5 degrees). 5. If 112 mm or 114.3 mm bolt circle is detected, trigger visual alarm and flag wrong_wheel_variant. Stop line conveyor immediately. 6. Verify presence of all 5 M14x1.5 hub bolts. If hole count is less than 5, trigger missing_fastener alert."
+        }
+    ]
+},
+{
+    "type": "knowledge",
+    "doc_id": "SOP-WA-104",
+    "component_id": "wheel_assembly",
+    "doc_type": "sop",
+    "title": "TPMS Sensor Presence Verification via Low-Frequency Triggering",
+    "defect_classes": [
+        "missing_tpms"
+    ],
+    "station": "WA-01",
+    "effective_date": "2024-07-20",
+    "version": "1.2",
+    "standard_ref": null,
+    "sections": [
+        {
+            "chunk_id": "SOP-WA-104#1.1",
+            "heading": "1.1 TPMS Verification Sequence",
+            "text": "1. Position LF antenna array TPMS-ANT-1 within 150 mm of the wheel rim outer profile. 2. Emit 125 kHz excitation burst for 300 ms to wake up internal TPMS sensor module. 3. Monitor RF receiver at 315 MHz / 433 MHz for sensor telemetry payload. 4. Confirm frame header contains valid sensor ID, internal pressure data, and battery status byte. 5. If no response is received within 1200 ms, re-try excitation sequence once. 6. If second excitation attempt fails, log missing_tpms defect code and hold conveyor pallet at station WA-01."
+        }
+    ]
+},
+{
+    "type": "knowledge",
+    "doc_id": "SOP-WA-105",
+    "component_id": "wheel_assembly",
+    "doc_type": "sop",
+    "title": "Hub Seating Gap and Planarity Visual-Tactile Inspection",
+    "defect_classes": [
+        "hub_seating_gap"
+    ],
+    "station": "WA-01",
+    "effective_date": "2024-08-01",
+    "version": "2.1",
+    "standard_ref": null,
+    "sections": [
+        {
+            "chunk_id": "SOP-WA-105#4.0",
+            "heading": "4.0 Seating Clearance Inspection",
+            "text": "1. Lower laser displacement sensors LDS-01 and LDS-02 onto the wheel hub mounting interface. 2. Sweep 360 degrees around the hub-to-brake-hat contact boundary. 3. Measure gap distance between rear flange surface of wheel hub and brake rotor face. Max allowable seating gap is 0.05 mm. 4. If gap exceeds 0.08 mm at any single point along the circumference, mark unit as hub_seating_gap failure. 5. Perform manual feeler gauge verification using 0.05 mm precision blade if sensor reading is marginal (0.05 mm to 0.08 mm). 6. Inspect hub mounting face for metal chips, burrs, or heavy coating buildup if gap error persists."
+        }
+    ]
+},
+{
+    "type": "knowledge",
+    "doc_id": "SOP-WA-106",
+    "component_id": "wheel_assembly",
+    "doc_type": "sop",
+    "title": "Fastener Thread Contamination Cleaning and Re-Inspection Protocol",
+    "defect_classes": [
+        "thread_contamination"
+    ],
+    "station": "WA-01",
+    "effective_date": "2024-08-15",
+    "version": "1.0",
+    "standard_ref": null,
+    "sections": [
+        {
+            "chunk_id": "SOP-WA-106#2.3",
+            "heading": "2.3 Remediation of Contaminated Threads",
+            "text": "1. Disassemble fasteners from affected hub assembly using manual reverse torque tool set to max 50 Nm. 2. Extract fasteners and inspect internal/external threads under 10x illuminated magnifier. 3. Identify contaminant type: oil residue, dry washing agent, corrosion particles, or machining chips. 4. Clean internal hub threads using solvent degreaser SOL-404 and nylon thread brush TB-14. 5. Blow dry with filtered dry nitrogen at 2.0 bar. 6. Install new, certified M14x1.5 bolts. Re-run torque-angle sweep on station WA-01 and verify elastic slope returns to nominal 3.2 Nm/deg."
+        }
+    ]
+},
+{
+    "type": "knowledge",
+    "doc_id": "SOP-WA-107",
+    "component_id": "wheel_assembly",
+    "doc_type": "sop",
+    "title": "Handling Cross-Threaded Fasteners and Stud Damage Recovery",
+    "defect_classes": [
+        "cross_threading"
+    ],
+    "station": "WA-01",
+    "effective_date": "2024-09-01",
+    "version": "2.2",
+    "standard_ref": null,
+    "sections": [
+        {
+            "chunk_id": "SOP-WA-107#1.4",
+            "heading": "1.4 Cross-Thread Quarantine and Repair",
+            "text": "1. If torque reaches 25 Nm prior to 2.0 full revolutions during initial thread engagement, stop rundown immediately. 2. Mark unit for cross_threading. Do not force spindle drive to prevent severe hub thread damage. 3. Back out M14x1.5 bolt manually. Inspect bolt threads and internal hub tapped holes for galling or metal stripping. 4. Measure internal thread pitch using thread pitch gauge M14x1.5. 5. If internal thread shear is observed over more than 1.5 pitch cycles, scrap hub assembly. Do not attempt re-tapping on production line."
+        }
+    ]
+},
+{
+    "type": "knowledge",
+    "doc_id": "SOP-WA-108",
+    "component_id": "wheel_assembly",
+    "doc_type": "sop",
+    "title": "Over-Torque and Yield Detection Recovery Actions",
+    "defect_classes": [
+        "over_torque"
+    ],
+    "station": "WA-01",
+    "effective_date": "2024-09-20",
+    "version": "1.0",
+    "standard_ref": null,
+    "sections": [
+        {
+            "chunk_id": "SOP-WA-108#3.2",
+            "heading": "3.2 Over-Torque Protocol",
+            "text": "1. When torque exceeds 125 Nm or angle past snug exceeds 45 degrees, controller aborts cycle and flags over_torque. 2. Discard all 5 M14x1.5 fasteners driven during the over-torque event. Fasteners exposed to yield conditions cannot be reused. 3. Inspect hub female threads with plug gauge PG-M14-6H. Go-gauge must pass freely; No-Go gauge must not enter more than 1.5 turns. 4. If No-Go gauge enters past 1.5 turns, mark hub thread as permanently deformed and quarantine hub assembly. 5. Log tool ID, cycle count, and calibration date in line logbook."
+        }
+    ]
+},
+{
+    "type": "knowledge",
+    "doc_id": "SOP-WA-109",
+    "component_id": "wheel_assembly",
+    "doc_type": "sop",
+    "title": "Under-Torque Re-Rundown and Spindle Fault Isolation",
+    "defect_classes": [
+        "under_torque"
+    ],
+    "station": "WA-01",
+    "effective_date": "2024-10-01",
+    "version": "1.3",
+    "standard_ref": null,
+    "sections": [
+        {
+            "chunk_id": "SOP-WA-109#2.0",
+            "heading": "2.0 Under-Torque Diagnosis",
+            "text": "1. If final torque is less than 110 Nm at completion of angle sweep, system flags under_torque. 2. Verify station pneumatic supply pressure has not dropped below 5.8 bar during sequence. 3. Check multi-spindle drive motor current logs for stall or electrical current limiting faults. 4. Perform manual torque check using calibrated hand torque wrench TW-250 set to 110 Nm. 5. If manual click occurs without movement, calibrate station torque transducer T-01 through T-05. 6. If manual wrench turns bolt before clicking, re-run automated cycle once after verifying fixture clamping force."
+        }
+    ]
+},
+{
+    "type": "knowledge",
+    "doc_id": "SOP-WA-110",
+    "component_id": "wheel_assembly",
+    "doc_type": "sop",
+    "title": "Rim Surface Damage Visual Classification and Thresholds",
+    "defect_classes": [
+        "rim_surface_damage"
+    ],
+    "station": "WA-01",
+    "effective_date": "2024-11-01",
+    "version": "1.0",
+    "standard_ref": null,
+    "sections": [
+        {
+            "chunk_id": "SOP-WA-110#1.1",
+            "heading": "1.1 Rim Surface Inspection",
+            "text": "1. Inspect painted and machined surfaces of wheel rim under 1000 lux illumination at inspection zone WA-01-B. 2. Scratches exceeding 0.5 mm in depth or 10.0 mm in length on visible A-surface are classified as rim_surface_damage. 3. Paint flakes, clearcoat chips, or impact dings greater than 2.0 mm diameter require immediate quarantine of wheel rim. 4. Inspect inner rim flange for socket contact marks caused by misaligned multi-spindle drive heads. 5. Report systemic socket rubbing to maintenance immediately for tool spindle alignment adjustment."
+        }
+    ]
+},
+{
+    "type": "knowledge",
+    "doc_id": "SOP-WA-111",
+    "component_id": "wheel_assembly",
+    "doc_type": "sop",
+    "title": "Shift Changeovers and Manual QA Audit Logging",
+    "defect_classes": [
+        "missing_fastener",
+        "missing_tpms",
+        "wrong_wheel_variant"
+    ],
+    "station": "WA-01",
+    "effective_date": "2024-11-15",
+    "version": "2.0",
+    "standard_ref": null,
+    "sections": [
+        {
+            "chunk_id": "SOP-WA-111#5.1",
+            "heading": "5.1 Shift Handover Sequence",
+            "text": "1. Outgoing shift operator must complete 5-point manual inspection on the last unit processed. 2. Verify physical presence of 5 M14x1.5 fasteners, correct bolt circle (120 mm), and active TPMS response. 3. Log shift counters for total units processed, reworks, and flagged defects in MES portal. 4. Incoming shift operator must sign off on calibration check block run before starting full-speed line operation. 5. Special focus must be maintained during Shift C (night shift) handovers to prevent unverified bypass of flagged defects."
+        }
+    ]
+},
+{
+    "type": "knowledge",
+    "doc_id": "SOP-WA-112",
+    "component_id": "wheel_assembly",
+    "doc_type": "sop",
+    "title": "Automated Fixture Alignment and Clamp Force Verification",
+    "defect_classes": [
+        "hub_seating_gap"
+    ],
+    "station": "WA-01",
+    "effective_date": "2024-12-01",
+    "version": "1.1",
+    "standard_ref": null,
+    "sections": [
+        {
+            "chunk_id": "SOP-WA-112#2.2",
+            "heading": "2.2 Fixture Verification",
+            "text": "1. Verify fixture locating pins P1 and P2 show zero visible galling or step wear. 2. Pneumatic clamp cylinders C-1 and C-2 must deliver 4.5 kN (+/- 0.2 kN) holding force at 6.0 bar input pressure. 3. Inspect wear plates WP-01 through WP-04 using dial indicator. Thickness variation across plates must not exceed 0.02 mm. 4. Clean fixture baseplate using solvent cleaner every 250 cycles to prevent particle accumulation beneath wheel hub. 5. Run verification hub fixture test sequence every Monday morning prior to Shift A."
+        }
+    ]
+},
+{
+    "type": "knowledge",
+    "doc_id": "SOP-WA-113",
+    "component_id": "wheel_assembly",
+    "doc_type": "sop",
+    "title": "Material Lot Hardness Spot Check at Assembly Station",
+    "defect_classes": [
+        "cross_threading",
+        "over_torque"
+    ],
+    "station": "WA-01",
+    "effective_date": "2025-01-10",
+    "version": "1.0",
+    "standard_ref": null,
+    "sections": [
+        {
+            "chunk_id": "SOP-WA-113#1.0",
+            "heading": "1.0 Lot Hardness Validation",
+            "text": "1. Perform portable Equotip hardness test on 3 sample M14x1.5 bolts from each newly staged fastener bin. 2. Acceptable hardness range for Property Class 10.9 fasteners is 320 HV to 380 HV (approx. 32 to 39 HRC). 3. If measured hardness is below 310 HV, flag material lot as soft; risk of cross_threading and thread stripping increases. 4. If measured hardness exceeds 390 HV, flag material lot as overly brittle; risk of premature fracture under tension. 5. Reject fastener bin and log lot number in MES incoming quality module if outside specified limits."
+        }
+    ]
+},
+{
+    "type": "knowledge",
+    "doc_id": "SOP-WA-114",
+    "component_id": "wheel_assembly",
+    "doc_type": "sop",
+    "title": "Manual Check Bypass Prevention and Escalation Protocol",
+    "defect_classes": [
+        "missing_fastener",
+        "missing_tpms",
+        "wrong_wheel_variant",
+        "hub_seating_gap"
+    ],
+    "station": "WA-01",
+    "effective_date": "2025-02-01",
+    "version": "1.2",
+    "standard_ref": null,
+    "sections": [
+        {
+            "chunk_id": "SOP-WA-114#4.2",
+            "heading": "4.2 Manual Check Bypass Escalation",
+            "text": "1. Station WA-01 features an automated interlock that halts the line if an inspection signal is missed. 2. Manual override keys are strictly restricted to Quality Supervisors and Maintenance Lead Engineers. 3. If an unverified unit bypasses visual or torque inspection due to manual key override, an automatic high-priority ticket is logged in MES. 4. The Quality Supervisor must perform 100% manual re-inspection of the bypassed unit and adjacent 5 units. 5. Verify 5 M14x1.5 fasteners, 110-125 Nm torque, 120 mm BCD, hub gap less than 0.05 mm, and TPMS RF ID payload before releasing carrier."
+        }
+    ]
+},
+{
+    "type": "knowledge",
+    "doc_id": "STD-WA-201",
+    "component_id": "wheel_assembly",
+    "doc_type": "standard_summary",
+    "title": "Fasteners — Torque/Clamp Force Testing Overview",
+    "defect_classes": [
+        "thread_contamination",
+        "under_torque",
+        "over_torque"
+    ],
+    "station": "WA-01",
+    "effective_date": "2024-06-01",
+    "version": "1.0",
+    "standard_ref": "ISO 16047",
+    "sections": [
+        {
+            "chunk_id": "STD-WA-201#1.0",
+            "heading": "Scope and Fastening Dynamics",
+            "text": "Paraphrased summary, not an extract. Consult the published standard for normative requirements. ISO 16047 specifies procedures for determining the torque-clamp force relationships of threaded fasteners. It outlines evaluation methods for total friction coefficient, thread friction coefficient, and bearing surface friction coefficient. Test procedures require driving fasteners into standardized load cells while simultaneously monitoring applied torque, angle of rotation, and induced tension force. The evaluation allows engineering teams to establish precise tightening parameters, detecting how surface coatings, lubricants, and thread contaminants shift the clamp force curve relative to applied torque."
+        }
+    ]
+}]

@@ -60,14 +60,47 @@ providers:
 # ---------------------------------------------------------------------------
 tiers:
   reasoning:
+    # Newest first, proven last. We do not pick ONE model -- the chain tries the
+    # strongest available and falls through on failure, so a model that is
+    # retired, rate-limited, or (as happened on 2026-08-07) behind a 503 auth
+    # outage costs us quality, never availability.
+    #
+    # This tier writes the Adjudicator's explanation, which is OFF the critical
+    # path -- the verdict is already computed deterministically before any model
+    # is called. So we optimise for reasoning quality and strict JSON, not speed.
+    #
+    # Deliberately NOT in this chain: DeepSeek-R1. It reasons well but emits
+    # <think> preamble that breaks strict-schema parsing. Available via
+    # TCS_REASONING_MODEL if you want to compare.
+    #
+    # CHAIN ORDER IS MEASURED, NOT ASSUMED. Every entry below was swept against
+    # the live endpoint on 2026-08-08 with the exact payload shape the adapter
+    # sends (temperature=0.0, stream=false, max_tokens set). Results:
+    #
+    #   azure/genailab-maas-gpt-4.1          200 OK   1193ms
+    #   azure/genailab-maas-gpt-4o           200 OK    739ms
+    #   Llama-4-Maverick-17B-128E-FP8        200 OK    986ms
+    #   genailab-maas-gpt-5.4                400      rejects temperature=0.0
+    #   azure_ai/...-DeepSeek-V3-0324        410      model_deprecated
+    #   azure_ai/...-Llama-3.3-70B-Instruct  404      invalid_request
+    #
+    # gpt-5.4 is NOT dead -- it answers in 900ms at temperature=1.0 -- but it
+    # refuses temperature=0.0, and this tier is built on determinism, so a model
+    # that cannot be pinned to a temperature is the wrong head for it. It stays
+    # reachable through TCS_REASONING_MODEL for anyone who wants to compare.
+    #
+    # Why the head matters so much here: a head entry that fails on EVERY call
+    # does not merely cost one round trip. Under concurrency it lands two
+    # failures back to back, trips the provider breaker, and takes every healthy
+    # sibling model down with it for the open window -- which is how this chain
+    # spent 2026-08-08 serving fake-adapter text while reporting itself healthy.
     chain:
-      # gpt-4o, not DeepSeek-R1. TCS's own guidance puts gpt-4o on "robust JSON
-      # parsing and central application logic", which is exactly the
-      # Adjudicator's job -- it must emit a strict schema. R1 is the better pure
-      # reasoner but it emits <think> preamble and is slow, and we are already
-      # over our latency budget. R1 stays available via env override.
       - provider: tcs
-        model: ${TCS_REASONING_MODEL:-azure/genailab-maas-gpt-4o}
+        model: ${TCS_REASONING_MODEL:-azure/genailab-maas-gpt-4.1}
+      - provider: tcs
+        model: azure/genailab-maas-gpt-4o     # measured working 2026-08-08
+      - provider: tcs
+        model: azure_ai/genailab-maas-Llama-4-Maverick-17B-128E-Instruct-FP8
       - provider: anthropic
         model: ${ANTHROPIC_REASONING_MODEL:-claude-opus-5}
       # NOT devstral: the probe measured it requiring 16 GiB against 9.3 GiB
@@ -86,9 +119,23 @@ tiers:
       max_cost_usd_per_call: 0.05
 
   fast:
+    # Summaries, classification, guardrail pre-screens. Latency matters here, so
+    # the chain favours the small/flash tiers.
+    #
+    # Swept live 2026-08-08, same payload shape the adapter sends:
+    #   azure/genailab-maas-gpt-4o-mini      200 OK    673ms
+    #   azure/genailab-maas-gpt-4.1-mini     200 OK    841ms
+    #   genailab-maas-gpt-5.4-mini           400      rejects temperature=0.0
+    #   gemini-2.0-flash-001                 400      invalid model name
+    #
+    # gemini-2.0-flash-001 is not a model this endpoint hosts at all; it was
+    # aspirational and every call to it was a guaranteed wasted round trip
+    # against the shared provider breaker. Removed rather than reordered.
     chain:
       - provider: tcs
         model: ${TCS_FAST_MODEL:-azure/genailab-maas-gpt-4o-mini}
+      - provider: tcs
+        model: azure/genailab-maas-gpt-4.1-mini
       - provider: anthropic
         model: ${ANTHROPIC_FAST_MODEL:-claude-haiku-4-5-20251001}
       - provider: ollama
@@ -99,7 +146,17 @@ tiers:
     budget:
       max_input_tokens: 4000
       max_output_tokens: 600
-      timeout_ms: 3000
+      # Was 3000ms. Measured against the live endpoint (see /admin capability
+      # probe, 2026-08-08): genailab-maas-gpt-5.4-mini alone averages
+      # ~2.0-2.4s just to answer a 5-token probe prompt, leaving almost no
+      # headroom for a real ~100-300 token chat reply before the client-side
+      # timeout fires. That was tripping the circuit breaker after 2
+      # consecutive timeouts (failure_threshold: 2 below) and silently
+      # routing every assistant reply to the fake adapter. 6000ms gives real
+      # headroom above the measured baseline while staying well under the
+      # reasoning tier's 8000ms -- fast is still fast, just not timed for a
+      # latency profile the endpoint doesn't have.
+      timeout_ms: 6000
       max_cost_usd_per_call: 0.01
 
   vision:
@@ -109,13 +166,28 @@ tiers:
     # path, not an emergency one -- see ADR-0003.
     required_capability: supports_vision
     chain:
-      # TCS DOES have a vision model, so this tier can genuinely light up.
-      # It stays an enhancement rather than the primary path: the structured CV
-      # descriptor feeds measured quantities to a text model, which is
+      # gpt-4o heads this chain, NOT the model TCS designates for vision.
+      # Measured 2026-08-07: Llama-3.2-90B-Vision-Instruct returned HTTP 410
+      # while gpt-4o PASSED the discriminating vision test -- it is natively
+      # multimodal. The designated model stays in the chain in case it returns;
+      # the probe decides, we never assume.
+      #
+      # This tier remains an ENHANCEMENT, not the primary path: the structured
+      # CV descriptor feeds measured quantities to a text model, which is
       # reproducible and testable in a way a VLM's impression is not (ADR-0003).
-      # The probe decides -- we never assume.
+      #
+      # Re-swept 2026-08-08. Both TCS-designated vision models are now GONE, not
+      # merely unreliable:
+      #   azure_ai/...-Llama-3.2-90B-Vision-Instruct  410  model_deprecated
+      #   azure_ai/...-Phi-3.5-vision-instruct        400  invalid model name
+      # Keeping a permanently-410 entry in a chain is not resilience, it is a
+      # guaranteed failure that feeds the provider breaker on every call. Both
+      # are removed; gpt-4o and gpt-4.1 both PASSED the discriminating vision
+      # probe and are the real vision path on this endpoint.
       - provider: tcs
-        model: ${TCS_VISION_MODEL:-azure_ai/genailab-maas-Llama-3.2-90B-Vision-Instruct}
+        model: ${TCS_VISION_MODEL:-azure/genailab-maas-gpt-4o}
+      - provider: tcs
+        model: azure/genailab-maas-gpt-4.1
       - provider: anthropic
         model: ${ANTHROPIC_VISION_MODEL:-claude-opus-5}
       # No default here on purpose. Defaulting to a vision model that may not be
@@ -141,12 +213,15 @@ embeddings:
     model: ${TCS_EMBEDDING_MODEL:-azure/genailab-maas-text-embedding-3-large}
     dimensions: 3072
   # Local fallback so the vector store can be built with no network at all.
+  # gte-large is what TCS ships as the local embedding SLM, so it is the right
+  # choice over a model we would have to source ourselves.
+  #
   # Swapping embedding models invalidates an existing index -- vectors from two
   # models are not comparable -- so the collection name carries the model id.
   fallback:
     provider: local
-    model: ${LOCAL_EMBEDDING_MODEL:-BAAI/bge-small-en-v1.5}
-    dimensions: 384
+    model: ${LOCAL_EMBEDDING_MODEL:-thenlper/gte-large}
+    dimensions: 1024
 
 # ---------------------------------------------------------------------------
 # Boot-time capability probe (FORGE §6). Results render on /admin so a judge
@@ -187,6 +262,16 @@ cache:
 # Circuit breaker, applied per provider endpoint.
 # ---------------------------------------------------------------------------
 breaker:
+  # Was 2. Right for a single caller against a dead endpoint (measured 14s per
+  # call while TCS was returning 503 -- opening fast kept the system
+  # responsive). Wrong for this environment: multiple people/sessions share
+  # one TCS API key concurrently (measured 27 simultaneous WS subscribers on
+  # 2026-08-08), so two ordinary rate-limit or timeout blips from OTHER
+  # callers -- not a dead endpoint -- were enough to trip the breaker for
+  # everyone, including callers whose own request would have succeeded.
+  # 5 tolerates realistic concurrent noise while still opening well before a
+  # genuinely dead endpoint would cost every caller the full chain-walk
+  # latency.
   failure_threshold: 5
   success_threshold: 2          # consecutive successes to close from half-open
   open_duration_seconds: 30

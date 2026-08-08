@@ -122,8 +122,16 @@ class LLMService(LLMPort):
 
     def _breaker(self, provider: ProviderConfig):  # noqa: ANN202
         b = self._config.breaker
+        # Keyed on (provider, model), not provider alone. Every tier's chain
+        # reuses the same provider entries ("tcs") under different models, and
+        # a single dead model at the head of one tier's chain (e.g. a model
+        # that 400s on every call) must not trip the breaker for a perfectly
+        # healthy model in a DIFFERENT tier that happens to share the provider
+        # name. That cross-tier contamination is exactly what made the fast
+        # tier serve fake-adapter text while its own configured model was
+        # reachable and answering in under 2s (2026-08-08).
         return REGISTRY.get(
-            f"llm:{provider.name}",
+            f"llm:{provider.name}:{provider.model}",
             failure_threshold=b.failure_threshold,
             success_threshold=b.success_threshold,
             open_duration_seconds=b.open_duration_seconds,
@@ -138,9 +146,12 @@ class LLMService(LLMPort):
         completion, degradations = await self._run_chain(request, request.tier, [])
 
         if degradations:
-            completion = replace(
-                completion, degradations=(*completion.degradations, *degradations)
-            )
+            # Dedupe, preserving order. Walking a four-provider chain with every
+            # breaker open would otherwise report `circuit_open` four times; the
+            # FACT that a breaker was open is what the trace and the UI need,
+            # not a tally of how many were.
+            merged = list(dict.fromkeys([*completion.degradations, *degradations]))
+            completion = replace(completion, degradations=tuple(merged))
         if self._cache:
             self._cache.put(request, completion)
         return completion
@@ -152,7 +163,7 @@ class LLMService(LLMPort):
         tier_config = self._config.tier(tier)
         budget = tier_config.budget
 
-        for provider in tier_config.chain:
+        for position, provider in enumerate(tier_config.chain):
             breaker = self._breaker(provider)
             try:
                 await breaker.before_call()
@@ -190,6 +201,20 @@ class LLMService(LLMPort):
                 if tier is not request.tier:
                     degradations.append(DegradationKind.LLM_TIER_DOWNGRADE)
                     completion = replace(completion, tier_requested=request.tier)
+
+                # Answering from anywhere but the head of the chain is a
+                # degradation. Without this the caller cannot tell a primary
+                # model's answer from a third-choice fallback, and the UI would
+                # present both identically.
+                if position > 0:
+                    degradations.append(DegradationKind.LLM_TIER_DOWNGRADE)
+
+                # The fake adapter answering means NO model was involved at all.
+                # That must be impossible to miss: its text is stamped, and the
+                # degradation propagates to the trace and the provenance strip.
+                if provider.kind == "fake":
+                    degradations.append(DegradationKind.RULE_ENGINE_FALLBACK)
+
                 return completion, degradations
 
         # Chain exhausted for this tier. Try the declared downgrade.

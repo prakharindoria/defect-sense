@@ -422,6 +422,82 @@ exit non-zero. They do not print fabricated success (CLAUDE.md rule 3).
 
 ---
 
+## ADR-0014 — Generic signal engine; torque becomes configuration
+
+**Status:** accepted · **Date:** 2026-08-07 · **Owner:** WS-B
+**Implementation:** `src/forge/domain/signals.py`
+
+### Context
+
+The torque-angle analyser is good physics but it is *one component's one
+sensor*. A generalized multi-component product cannot have it as the core
+abstraction. Measured coupling was smaller than feared — `cost.py` 6/405 lines,
+`state.py` 9/469, `adjudication.py` 13/195 — so only `torque.py` (142/689) was
+genuinely component-specific.
+
+### Decision
+
+Replace it with `SignalSeries` + a registry of pure feature extractors. The
+physics moves into configuration rather than disappearing:
+
+| Domain concept | Generic feature |
+|---|---|
+| seating knee angle | `piecewise_linear.breakpoint_x` |
+| elastic slope | `piecewise_linear.slope_after` |
+| run-down torque | `piecewise_linear.mean_before` |
+| yield flattening | `piecewise_linear.late_early_slope_ratio` |
+
+A component declares its channels, which extractors to run, deviation rules
+(weight + physical direction), and spec limits. The engine knows nothing about
+fasteners.
+
+Extractors: `piecewise_linear`, `endpoint`, `stability`, `trend`,
+`distribution`, `spectral`. Features are **namespaced** (`extractor.feature`) so
+two extractors both reporting `r2` cannot silently overwrite each other and
+corrupt every baseline built from them.
+
+### Verified equivalence
+
+`tests/unit/test_signals.py::TestEquivalenceWithTorqueAnalyser` asserts the
+generic extractors reproduce the old analyser **bit-for-bit** (`rel_tol=1e-12`)
+across all 5 defect classes × 3 severities × 9 features. Without that test,
+"we generalized it" would be a claim rather than evidence.
+
+### It got BETTER, and that corrects ADR-0002
+
+ADR-0002 recorded a known limit: *"mild over-torque that stays in spec is not
+reliably caught (severity 0.4 scores 0.27, below threshold)"*. That limit came
+from **hand-set one-sided ceilings** (`residual_variance_max`,
+`rundown_torque_max_nm`) that I chose by eye. The generic engine learns every
+ceiling as a k-sigma bound on the clean distribution instead:
+
+| Case | Old (hand-set ceilings) | New (learned) |
+|---|---|---|
+| `over_torque` @ 0.4 | 0.27 — **missed** | **0.65, fusion-only** |
+| `cross_threading` @ 0.4 | 0.41 — below threshold | **0.64, fusion-only** |
+| clean false-positive rate | ≤ 2% | **0% of 100 runs** |
+| `thread_contamination` @ 0.8 | 0.61 | 0.73 |
+
+So removing my hand-picked numbers improved sensitivity without costing
+specificity. **That limit in ADR-0002 is no longer true** and the ADR should be
+read with this correction.
+
+### Honest cons
+
+- Namespaced feature keys are more verbose than typed attributes, and a typo in
+  a component's rule silently contributes nothing rather than failing loudly.
+  Mitigated by `test_missing_feature_is_skipped_not_guessed` documenting the
+  behaviour, but a validation pass over declared rules vs available features is
+  still owed.
+- `spectral` uses Goertzel at declared frequencies plus a coarse 64-step scan,
+  not a real FFT. Adequate for known bearing fault frequencies; it would not
+  find an unexpected narrow tone.
+- The old `torque.py` remains as the equivalence oracle. It should be deleted
+  once the wheel component is fully expressed as configuration, or it becomes a
+  second implementation of a safety decision.
+
+---
+
 ## Pending decisions
 
 | # | Question | Blocked on | Default if unanswered |

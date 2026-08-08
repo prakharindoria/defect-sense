@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="default">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  body { margin:0; background:#E7E5E2; -webkit-font-smoothing:antialiased; }
+  a { color:#DD5F42; text-decoration:none; }
+  a:hover { color:#B94A32; }
+  @keyframes fpulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+</style>
+</helmet>
+
+<div style="min-height:100vh;background:#E7E5E2;padding:26px;font-family:Poppins,system-ui,sans-serif;color:#1B1A18;box-sizing:border-box">
+
+<sc-if value="{{ isLogin }}" hint-placeholder-val="{{ false }}">
+  <div style="min-height:calc(100vh - 52px);display:grid;place-items:center">
+    <div style="width:100%;max-width:1100px;display:grid;grid-template-columns:1.05fr .95fr;gap:24px;background:#F8F7F5;border-radius:40px;padding:26px;box-shadow:0 40px 90px rgba(60,50,40,.10)">
+      <div style="background:#fff;border:1px solid #EDEAE6;border-radius:30px;padding:44px 42px">
+        <div style="display:flex;align-items:center;gap:14px;margin-bottom:36px">
+          <div style="width:54px;height:54px;border-radius:50%;background:#141210;color:#fff;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:600">D</div>
+          <div>
+            <div style="font-size:21px;font-weight:600;letter-spacing:.14em">DefectSense</div>
+            <div style="font-size:12.5px;color:#9B968F">AI-powered manufacturing quality control defect detection agent</div>
+          </div>
+        </div>
+        <div style="font-size:34px;font-weight:500;letter-spacing:-.02em;line-height:1.15">Welcome back.</div>
+        <div style="font-size:34px;font-weight:500;letter-spacing:-.02em;line-height:1.15;color:#B6B1A9;margin-bottom:30px">Sign in to the line.</div>
+
+        <div style="font-size:11px;letter-spacing:.14em;color:#A5A099;margin-bottom:8px">USERNAME</div>
+        <div style="display:flex;align-items:center;gap:12px;background:#F6F4F2;border:1px solid #EDEAE6;border-radius:999px;padding:14px 22px;margin-bottom:16px">
+          <div style="width:8px;height:8px;border-radius:50%;background:#DD5F42"></div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:14px">{{ loginUser }}</div>
+        </div>
+        <div style="font-size:11px;letter-spacing:.14em;color:#A5A099;margin-bottom:8px">PASSWORD</div>
+        <div style="display:flex;align-items:center;gap:12px;background:#F6F4F2;border:1px solid #EDEAE6;border-radius:999px;padding:14px 22px;margin-bottom:24px">
+          <div style="width:8px;height:8px;border-radius:50%;background:#D3CEC7"></div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:14px;letter-spacing:.2em;color:#6E6A64">•••••••••</div>
+        </div>
+        <div onClick="{{ signIn }}" style="background:#DD5F42;color:#fff;border-radius:999px;padding:17px 26px;display:flex;align-items:center;justify-content:center;gap:12px;font-size:15px;font-weight:500;cursor:pointer" style-hover="background:#C95034">
+          Sign in<span style="font-size:17px">→</span>
+        </div>
+        <div style="margin-top:26px;font-size:11.5px;color:#A5A099;line-height:1.7">All data in this system is synthetic. The credentials below are demo accounts against generated data, not secrets.</div>
+      </div>
+
+      <div style="background:#F1EFEC;border:1px solid #EDEAE6;border-radius:30px;padding:34px 30px;display:flex;flex-direction:column">
+        <div style="font-size:11px;letter-spacing:.16em;color:#A5A099;margin-bottom:6px">DEMO ACCOUNTS</div>
+        <div style="font-size:18px;font-weight:500;margin-bottom:4px">Each role sees a different product.</div>
+        <div style="font-size:12.5px;color:#9B968F;line-height:1.6;margin-bottom:22px">Route guards are a courtesy — every endpoint carries its own permission dependency server-side.</div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <sc-for list="{{ accounts }}" as="a" hint-placeholder-count="3">
+            <div onClick="{{ a.pick }}" style="background:#fff;border:1px solid #EDEAE6;border-radius:20px;padding:16px 18px;cursor:pointer;display:flex;gap:14px;align-items:flex-start" style-hover="border-color:#DD5F42">
+              <div style="width:38px;height:38px;border-radius:50%;background:#F4E7E2;color:#C95034;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;flex:none">{{ a.initials }}</div>
+              <div style="flex:1">
+                <div style="display:flex;align-items:baseline;gap:8px">
+                  <div style="font-size:14px;font-weight:500">{{ a.display_name }}</div>
+                  <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#A5A099">{{ a.label }}</div>
+                </div>
+                <div style="font-size:11.5px;color:#9B968F;line-height:1.55;margin-top:3px">{{ a.description }}</div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="flex:1"></div>
+        <div style="display:flex;gap:8px;margin-top:24px;flex-wrap:wrap">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.1em;color:#8B7BF0;border:1px solid #DAD3F5;border-radius:999px;padding:6px 12px">SYNTHETIC DATA</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.1em;color:#2E9E6B;border:1px solid #CBE7DA;border-radius:999px;padding:6px 12px">⌁ API LIVE</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.1em;color:#A5A099;border:1px solid #E6E2DC;border-radius:999px;padding:6px 12px">pack: wheel_assembly</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</sc-if>
+
+<sc-if value="{{ isApp }}" hint-placeholder-val="{{ true }}">
+<div style="max-width:1460px;margin:0 auto;background:#F8F7F5;border-radius:40px;box-shadow:0 40px 90px rgba(60,50,40,.10);overflow:hidden">
+
+  <div style="display:flex;align-items:center;gap:18px;padding:24px 34px 18px">
+    <div style="width:48px;height:48px;border-radius:50%;background:#fff;border:1px solid #EDEAE6;display:flex;align-items:center;justify-content:center;cursor:pointer">
+      <div style="width:16px;display:flex;flex-direction:column;gap:4px"><div style="height:1.6px;background:#1B1A18"></div><div style="height:1.6px;background:#1B1A18;width:11px"></div></div>
+    </div>
+    <div style="width:54px;height:54px;border-radius:50%;background:#141210;color:#fff;display:flex;align-items:center;justify-content:center;font-size:19px;font-weight:600">D</div>
+    <div>
+      <div style="font-size:19px;font-weight:600;letter-spacing:.13em;line-height:1.2">DefectSense</div>
+      <div style="font-size:13px;color:#A5A099;line-height:1.2">AI defect detection agent</div>
+    </div>
+    <div style="flex:1"></div>
+    <div style="display:flex;gap:7px;align-items:center">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.1em;color:#8B7BF0;background:#F2EFFC;border-radius:999px;padding:7px 13px">SYNTHETIC</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.1em;color:#2E9E6B;background:#EAF6F0;border-radius:999px;padding:7px 13px">⌁ LIVE</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;margin-left:8px">
+      <div style="width:48px;height:48px;border-radius:50%;background:#F4E7E2;color:#C95034;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600">{{ userInitials }}</div>
+      <div>
+        <div style="font-size:14.5px;font-weight:500;line-height:1.25">{{ userName }}</div>
+        <div style="font-size:12.5px;color:#A5A099;line-height:1.25">{{ userRole }}</div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;background:#fff;border:1px solid #EDEAE6;border-radius:999px;padding:6px 20px 6px 6px;margin-left:6px">
+      <div style="width:40px;height:40px;border-radius:50%;background:#F4F2EF;display:flex;align-items:center;justify-content:center;font-size:15px;color:#77726B">⌕</div>
+      <div style="font-size:13.5px;color:#B6B1A9">Search unit, correlation id …</div>
+    </div>
+    <div onClick="{{ signOut }}" style="width:48px;height:48px;border-radius:50%;background:#fff;border:1px solid #EDEAE6;display:flex;align-items:center;justify-content:center;font-size:15px;color:#77726B;cursor:pointer" style-hover="border-color:#DD5F42;color:#DD5F42" title="Sign out">⏻</div>
+  </div>
+
+  <div style="display:flex;align-items:center;gap:22px;padding:14px 34px 26px">
+    <div style="display:flex;align-items:center;gap:6px;background:#fff;border:1px solid #EDEAE6;border-radius:999px;padding:6px">
+      <sc-for list="{{ nav }}" as="n" hint-placeholder-count="5">
+        <div onClick="{{ n.go }}" style="border-radius:999px;padding:11px 20px;font-size:13.5px;cursor:pointer;white-space:nowrap;background:{{ n.bg }};color:{{ n.fg }};font-weight:{{ n.fw }}">{{ n.label }}</div>
+      </sc-for>
+    </div>
+    <div style="flex:1"></div>
+    <div style="text-align:right">
+      <div style="font-size:33px;font-weight:500;letter-spacing:-.025em;line-height:1.1">{{ pageTitle }}</div>
+      <div style="font-size:26px;font-weight:400;letter-spacing:-.02em;line-height:1.2;color:#BEB9B1">{{ pageSub }}</div>
+    </div>
+    <div style="width:78px;height:78px;border-radius:50%;background:#fff;border:1px solid #EDEAE6;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;flex:none">
+      <div style="width:9px;height:9px;border-radius:50%;background:#2E9E6B;animation:fpulse 2.2s ease-in-out infinite"></div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:.1em;color:#A5A099">SHIFT B</div>
+    </div>
+  </div>
+
+  <div style="background:#FDFCFB;border-top:1px solid #F0EDE9;border-radius:36px 36px 0 0;padding:26px 26px 30px">
+
+    <div style="display:flex;align-items:center;gap:18px;background:{{ andonBg }};border:1px solid {{ andonBorder }};border-radius:24px;padding:18px 24px;margin-bottom:18px">
+      <div style="width:13px;height:13px;border-radius:50%;background:{{ andonDot }};animation:fpulse 1.6s ease-in-out infinite;flex:none"></div>
+      <div style="font-size:15px;font-weight:600;letter-spacing:.1em">{{ andonLabel }}</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#7C776F">{{ andonDetail }}</div>
+      <div style="flex:1"></div>
+      <sc-if value="{{ andonHuman }}" hint-placeholder-val="{{ false }}">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.1em;color:#C95034;background:#FBEAE5;border-radius:999px;padding:7px 14px">HUMAN APPROVAL REQUIRED</div>
+      </sc-if>
+      <div onClick="{{ openLatest }}" style="background:#141210;color:#fff;border-radius:999px;padding:11px 20px;font-size:13px;cursor:pointer">Open evidence →</div>
+    </div>
+
+    <!-- ============ DASHBOARD ============ -->
+    <sc-if value="{{ isDashboard }}" hint-placeholder-val="{{ true }}">
+    <div style="display:grid;grid-template-columns:1.15fr 1.15fr .62fr 1fr;gap:16px;align-items:start">
+
+      <div style="background:#fff;border:1px solid #EDEAE6;border-radius:24px;overflow:hidden">
+        <div style="padding:20px 22px 18px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+            <div style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600;letter-spacing:.06em">{{ hero.unit }}</div>
+            <div style="display:flex;align-items:center;gap:7px;border:1px solid #EDEAE6;border-radius:999px;padding:7px 14px;font-size:12px;color:#6E6A64">Live feed <span style="font-size:9px;color:#A5A099">▾</span></div>
+          </div>
+          <div style="font-size:12px;color:#A5A099;margin-bottom:5px">Current verdict · {{ hero.signal }}</div>
+          <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:20px">
+            <div style="font-size:29px;font-weight:600;letter-spacing:-.02em;color:{{ hero.color }}">{{ hero.verdictText }}</div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#A5A099">conf {{ hero.conf }}</div>
+          </div>
+          <div style="display:flex;gap:9px">
+            <div onClick="{{ openLatest }}" style="flex:1;background:#141210;color:#fff;border-radius:999px;padding:13px;text-align:center;font-size:13px;cursor:pointer">Adjudicate</div>
+            <div style="flex:1;background:#F4F2EF;color:#3A3733;border-radius:999px;padding:13px;text-align:center;font-size:13px;cursor:pointer" style-hover="background:#EAE7E2">Contain</div>
+          </div>
+        </div>
+        <div style="border-top:1px solid #F0EDE9;padding:16px 22px;display:flex;align-items:center;gap:14px">
+          <div style="flex:1">
+            <div style="font-size:11.5px;color:#A5A099">Expected cost of action</div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:19px;font-weight:600">{{ hero.cost }}</div>
+          </div>
+          <div onClick="{{ goWorkbench }}" style="display:flex;align-items:center;gap:9px;cursor:pointer">
+            <div style="width:30px;height:30px;border-radius:50%;background:#DD5F42;color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px">₹</div>
+            <div style="font-size:12px;color:#DD5F42;line-height:1.3">Cost<br>triage</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div style="background:#fff;border:1px solid #EDEAE6;border-radius:24px;padding:18px 22px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+            <div style="width:38px;height:38px;border-radius:50%;border:1px solid #EDEAE6;display:flex;align-items:center;justify-content:center;font-size:14px;color:#6E6A64">↓</div>
+            <div style="display:flex;align-items:center;gap:7px;border:1px solid #EDEAE6;border-radius:999px;padding:7px 14px;font-size:12px;color:#6E6A64">This shift <span style="font-size:9px;color:#A5A099">▾</span></div>
+          </div>
+          <div style="font-size:12px;color:#A5A099;margin-bottom:3px">Units inspected</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:25px;font-weight:600;letter-spacing:-.01em">{{ m.inspected }}</div>
+        </div>
+        <div style="background:#fff;border:1px solid #EDEAE6;border-radius:24px;padding:18px 22px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+            <div style="width:38px;height:38px;border-radius:50%;border:1px solid #EDEAE6;display:flex;align-items:center;justify-content:center;font-size:14px;color:#6E6A64">✗</div>
+            <div style="display:flex;align-items:center;gap:7px;border:1px solid #EDEAE6;border-radius:999px;padding:7px 14px;font-size:12px;color:#6E6A64">This shift <span style="font-size:9px;color:#A5A099">▾</span></div>
+          </div>
+          <div style="font-size:12px;color:#A5A099;margin-bottom:3px">Defects · <span style="color:#DD5F42">{{ m.fusion }} fusion-only</span></div>
+          <div style="display:flex;align-items:center;gap:12px">
+            <div style="font-family:'JetBrains Mono',monospace;font-size:25px;font-weight:600;color:#DD5F42">{{ m.defects }}</div>
+            <div style="flex:1"></div>
+            <div onClick="{{ goAgents }}" style="display:flex;align-items:center;gap:8px;cursor:pointer">
+              <div style="width:26px;height:26px;border-radius:50%;background:#DD5F42;color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px">◈</div>
+              <div style="font-size:12px;color:#DD5F42;line-height:1.3">View<br>in trace</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:14px;align-items:center">
+        <div style="background:#fff;border:1px solid #EDEAE6;border-radius:24px;padding:22px 12px;width:100%;display:flex;flex-direction:column;align-items:center;gap:9px">
+          <div style="width:42px;height:42px;border-radius:50%;background:#F4F2EF;display:flex;align-items:center;justify-content:center;font-size:16px">⛓</div>
+          <div style="font-size:12.5px;color:#6E6A64;text-align:center">Line halt<br><span style="color:#A5A099;font-size:11px">never autonomous</span></div>
+        </div>
+        <div style="width:152px;height:152px;border-radius:50%;background:#141210;display:flex;align-items:center;justify-content:center;position:relative">
+          <div style="position:absolute;inset:12px;border-radius:50%;background:{{ fpyRing }}"></div>
+          <div style="position:absolute;inset:26px;border-radius:50%;background:#141210"></div>
+          <div style="position:relative;text-align:center;color:#fff">
+            <div style="font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:600">{{ m.fpy }}</div>
+            <div style="font-size:10px;color:#8E8A84;letter-spacing:.04em">First pass yield</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+          <div style="background:#fff;border:1px solid #EDEAE6;border-radius:24px;padding:18px">
+            <div style="width:36px;height:36px;border-radius:50%;border:1px solid #EDEAE6;display:flex;align-items:center;justify-content:center;font-size:13px;color:#6E6A64;margin-bottom:14px">◷</div>
+            <div style="font-size:20px;font-weight:600;letter-spacing:-.01em">13 Days</div>
+            <div style="font-size:11.5px;color:#A5A099;margin-bottom:11px">without a line stop</div>
+            <div style="display:grid;grid-template-columns:repeat(10,1fr);gap:4px">
+              <sc-for list="{{ uptimeDots }}" as="d" hint-placeholder-count="30">
+                <div style="aspect-ratio:1;border-radius:50%;background:{{ d.c }}"></div>
+              </sc-for>
+            </div>
+          </div>
+          <div style="background:#fff;border:1px solid #EDEAE6;border-radius:24px;padding:18px;position:relative;overflow:hidden">
+            <div style="width:36px;height:36px;border-radius:50%;border:1px solid #EDEAE6;display:flex;align-items:center;justify-content:center;font-size:13px;color:#6E6A64;margin-bottom:10px">⌸</div>
+            <div style="font-size:11.5px;color:#A5A099">Latency budget</div>
+            <div style="display:flex;align-items:flex-end;gap:6px;height:78px;margin-top:8px">
+              <sc-for list="{{ latencyBars }}" as="b" hint-placeholder-count="9">
+                <div style="flex:1;border-radius:4px;background:{{ b.c }};height:{{ b.h }}"></div>
+              </sc-for>
+            </div>
+            <div style="display:flex;justify-content:space-between;margin-top:8px">
+              <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#A5A099;background:#F4F2EF;border-radius:999px;padding:4px 9px">p50 {{ m.p50 }}</div>
+              <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#fff;background:#DD5F42;border-radius:999px;padding:4px 9px">p95 {{ m.p95 }}</div>
+            </div>
+          </div>
+        </div>
+        <div style="background:#fff;border:1px solid #EDEAE6;border-radius:24px;padding:18px 20px">
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <div style="width:36px;height:36px;border-radius:50%;border:1px solid #EDEAE6;display:flex;align-items:center;justify-content:center;font-size:13px;color:#6E6A64">↯</div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:600;color:#DD5F42">{{ m.costAtRisk }}</div>
+          </div>
+          <svg viewBox="0 0 300 70" preserveAspectRatio="none" style="width:100%;height:62px;margin:8px 0 4px">
+            <path d="M0,48 C18,30 28,62 46,44 C64,26 74,58 92,40 C110,24 120,52 138,36 C156,20 166,48 184,32 C202,18 212,44 230,28 C248,14 258,38 276,24 C288,16 294,26 300,20" fill="none" stroke="#E88A72" stroke-width="2.2" stroke-linecap="round"></path>
+          </svg>
+          <div style="display:flex;align-items:flex-end;justify-content:space-between">
+            <div>
+              <div style="font-size:17px;font-weight:500">Cost at risk</div>
+              <div style="font-size:11.5px;color:#A5A099">containment scope · 12 units</div>
+            </div>
+            <div style="font-size:12px;color:#2E9E6B;background:#EAF6F0;border-radius:999px;padding:7px 13px">−9.3% wk</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1.05fr 1.9fr 1.1fr;gap:16px;margin-top:16px;align-items:start">
+      <div style="background:#F4F2EF;border-radius:24px;padding:22px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+          <div style="font-size:16px;font-weight:500">Defect classes</div>
+          <div style="display:flex;align-items:center;gap:7px;background:#fff;border:1px solid #EDEAE6;border-radius:999px;padding:7px 14px;font-size:12px;color:#6E6A64">30 days <span style="font-size:9px;color:#A5A099">▾</span></div>
+        </div>
+        <div style="position:relative;height:340px;display:flex;align-items:flex-end;justify-content:center">
+          <div style="position:absolute;bottom:0;width:280px;height:280px;border-radius:50%;background:rgba(221,95,66,.10);display:flex;justify-content:center;padding-top:16px"><span style="font-family:'JetBrains Mono',monospace;font-size:15px;color:#C95034">41 cross-thread</span></div>
+          <div style="position:absolute;bottom:0;width:214px;height:214px;border-radius:50%;background:rgba(221,95,66,.16);display:flex;justify-content:center;padding-top:14px"><span style="font-family:'JetBrains Mono',monospace;font-size:15px;color:#C95034">28 soft-joint</span></div>
+          <div style="position:absolute;bottom:0;width:150px;height:150px;border-radius:50%;background:rgba(221,95,66,.30);display:flex;justify-content:center;padding-top:12px"><span style="font-family:'JetBrains Mono',monospace;font-size:14px;color:#8E3823">17 debris</span></div>
+          <div style="position:absolute;bottom:0;width:92px;height:92px;border-radius:50%;background:#DD5F42;display:flex;justify-content:center;padding-top:12px"><span style="font-family:'JetBrains Mono',monospace;font-size:13px;color:#fff">6 novel</span></div>
+        </div>
+      </div>
+
+      <div style="background:#F4F2EF;border-radius:24px;padding:22px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+          <div style="font-size:16px;font-weight:500">Inspection feed</div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <div style="width:34px;height:34px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;color:#77726B;font-size:14px">⋮</div>
+            <div style="width:34px;height:34px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;color:#77726B;font-size:12px">⤢</div>
+            <div style="display:flex;align-items:center;gap:8px;background:#fff;border-radius:999px;padding:8px 15px;font-size:12.5px;color:#6E6A64">▽ Filters</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
+          <div style="width:38px;height:38px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;color:#77726B;font-size:14px">⌕</div>
+          <div style="font-size:13.5px;color:#B6B1A9;flex:1">Search units, verdicts, dispositions …</div>
+          <div style="display:flex;align-items:center;gap:9px;background:#fff;border-radius:999px;padding:8px 15px;font-size:12.5px">Fusion-only <span style="width:7px;height:7px;border-radius:50%;background:#DD5F42;display:inline-block"></span></div>
+          <div style="display:flex;align-items:center;gap:9px;background:#fff;border-radius:999px;padding:8px 15px;font-size:12.5px;color:#6E6A64">Escalated ✕</div>
+          <div style="display:flex;align-items:center;gap:9px;background:#fff;border-radius:999px;padding:8px 15px;font-size:12.5px;color:#6E6A64">Shift B ✕</div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px">
+          <div style="background:#fff;border-radius:20px;padding:18px">
+            <div style="display:flex;align-items:baseline;gap:6px">
+              <div style="font-family:'JetBrains Mono',monospace;font-size:23px;font-weight:600;color:#DD5F42">142.6</div>
+              <div style="font-size:11px;color:#A5A099">Nm</div>
+            </div>
+            <div style="font-size:11px;color:#A5A099;margin-top:2px">last endpoint</div>
+            <div style="display:flex;align-items:flex-end;gap:4px;height:74px;margin-top:14px">
+              <sc-for list="{{ torqueBars }}" as="b" hint-placeholder-count="14">
+                <div style="flex:1;border-radius:3px;background:{{ b.c }};height:{{ b.h }}"></div>
+              </sc-for>
+            </div>
+            <div style="display:flex;justify-content:center;gap:5px;align-items:center;margin-top:12px">
+              <div style="width:5px;height:5px;border-radius:50%;background:#DAD5CE"></div>
+              <div style="width:5px;height:5px;border-radius:50%;background:#DAD5CE"></div>
+              <div style="width:18px;height:5px;border-radius:999px;background:#DD5F42"></div>
+              <div style="width:5px;height:5px;border-radius:50%;background:#DAD5CE"></div>
+            </div>
+          </div>
+          <div style="background:#fff;border-radius:20px;padding:18px">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+              <div style="font-size:14px;font-weight:500">Agent pipeline</div>
+              <div style="color:#A5A099">⋮</div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:12px">
+              <sc-for list="{{ pipelineMini }}" as="p" hint-placeholder-count="3">
+                <div style="display:flex;align-items:center;gap:11px">
+                  <div style="width:30px;height:30px;border-radius:50%;background:{{ p.bg }};color:{{ p.fg }};display:flex;align-items:center;justify-content:center;font-size:12px;flex:none">{{ p.glyph }}</div>
+                  <div style="font-size:12.5px;flex:1">{{ p.label }}</div>
+                  <div style="font-family:'JetBrains Mono',monospace;font-size:10.5px;color:#A5A099">{{ p.ms }}</div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+          <div style="background:#fff;border-radius:20px;padding:18px;display:flex;flex-direction:column">
+            <div style="width:44px;height:44px;border-radius:50%;background:#FBEAE5;color:#C95034;display:flex;align-items:center;justify-content:center;font-size:18px;margin-bottom:12px">⚠</div>
+            <div style="font-size:14px;font-weight:500;margin-bottom:4px">Human approval</div>
+            <div style="font-size:11.5px;color:#A5A099;line-height:1.5;flex:1">Cost crosses the supervisor threshold. The engine declines to break a near-tie silently.</div>
+            <div onClick="{{ goWorkbench }}" style="background:#DD5F42;color:#fff;border-radius:999px;padding:12px;text-align:center;font-size:13px;margin-top:14px;cursor:pointer">Review</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="background:#F4F2EF;border-radius:24px;padding:22px;display:flex;flex-direction:column;gap:12px">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div style="display:flex;gap:5px;align-items:center">
+            <div style="width:5px;height:5px;border-radius:50%;background:#DAD5CE"></div>
+            <div style="width:5px;height:5px;border-radius:50%;background:#DAD5CE"></div>
+            <div style="width:20px;height:6px;border-radius:999px;background:#141210"></div>
+          </div>
+          <div style="width:34px;height:34px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;color:#77726B;font-size:13px">✕</div>
+        </div>
+        <div style="font-size:11px;letter-spacing:.14em;color:#A5A099">AWAITING YOUR DECISION</div>
+        <div style="font-size:21px;font-weight:500;letter-spacing:-.015em;line-height:1.3">{{ pendingCount }} units need a supervisor.</div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <sc-for list="{{ pending }}" as="p" hint-placeholder-count="3">
+            <div onClick="{{ p.open }}" style="background:#fff;border-radius:18px;padding:14px 16px;cursor:pointer" style-hover="box-shadow:0 8px 20px rgba(60,50,40,.07)">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">
+                <div style="font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600">{{ p.unit }}</div>
+                <div style="flex:1"></div>
+                <div style="font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.06em;color:{{ p.fg }};background:{{ p.bg }};border-radius:999px;padding:4px 9px">{{ p.badge }}</div>
+              </div>
+              <div style="font-size:11.5px;color:#9B968F;line-height:1.5">{{ p.reason }}</div>
+              <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#DD5F42;margin-top:6px">{{ p.cost }}</div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#B6B1A9;line-height:1.7;margin-top:2px">gate confidence 0.45–0.70 · cost &gt; ₹50,000 · near-tie<br>source RULE · expected-cost</div>
+      </div>
+    </div>
+    </sc-if>
+
+    <!-- ============ STATION ============ -->
+    <sc-if value="{{ isStation }}" hint-placeholder-val="{{ false }}">
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px">
+      <sc-for list="{{ stationKpis }}" as="k" hint-placeholder-count="4">
+        <div style="background:#fff;border:1px solid #EDEAE6;border-radius:24px;padding:20px 22px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+            <div style="width:38px;height:38px;border-radius:50%;border:1px solid #EDEAE6;display:flex;align-items:center;justify-content:center;font-size:14px;color:#6E6A64">{{ k.glyph }}</div>
+            <div style="border:1px solid #EDEAE6;border-radius:999px;padding:6px 13px;font-size:11.5px;color:#A5A099">this shift</div>
+          </div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:27px;font-weight:600;letter-spacing:-.01em;color:{{ k.color }}">{{ k.value }}</div>
+          <div style="font-size:11px;letter-spacing:.13em;color:#A5A099;margin-top:6px">{{ k.label }}</div>
+        </div>
+      </sc-for>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1.5fr 1fr;gap:16px;margin-top:16px;align-items:start">
+      <div style="background:#F4F2EF;border-radius:24px;padding:22px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+          <div style="font-size:16px;font-weight:500">Recent units</div>
+          <div style="display:flex;align-items:center;gap:7px;background:#fff;border-radius:999px;padding:8px 15px;font-size:12.5px;color:#6E6A64">Last 12 <span style="font-size:9px;color:#A5A099">▾</span></div>
+        </div>
+        <div style="background:#fff;border-radius:20px;padding:6px 18px 14px">
+          <div style="display:grid;grid-template-columns:1.1fr 1.1fr 1.4fr .7fr;gap:12px;padding:14px 4px 10px;font-size:10px;letter-spacing:.12em;color:#B6B1A9;border-bottom:1px solid #F0EDE9">
+            <div>UNIT</div><div>VERDICT</div><div>ACTION</div><div style="text-align:right">LATENCY</div>
+          </div>
+          <sc-for list="{{ feed }}" as="f" hint-placeholder-count="8">
+            <div onClick="{{ f.open }}" style="display:grid;grid-template-columns:1.1fr 1.1fr 1.4fr .7fr;gap:12px;padding:12px 4px;border-bottom:1px solid #F7F5F2;font-family:'JetBrains Mono',monospace;font-size:12px;align-items:center;cursor:pointer" style-hover="background:#FBFAF8">
+              <div>{{ f.unit }}</div>
+              <div><span style="font-size:10px;letter-spacing:.05em;color:{{ f.fg }};background:{{ f.bg }};border-radius:999px;padding:4px 10px">{{ f.badge }}</span></div>
+              <div style="font-family:Poppins,sans-serif;color:#6E6A64;font-size:12px">{{ f.action }}</div>
+              <div style="text-align:right;color:#8B8680">{{ f.ms }}</div>
+            </div>
+          </sc-for>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#B6B1A9;padding-top:12px;line-height:1.7">source MEASURED · verifiers + torque signature · pack wheel_assembly · data SYNTHETIC</div>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <div style="background:#fff;border:1px solid #EDEAE6;border-radius:24px;padding:22px">
+          <div style="width:46px;height:46px;border-radius:50%;background:#FBEAE5;color:#C95034;display:flex;align-items:center;justify-content:center;font-size:19px;margin-bottom:14px">⚠</div>
+          <div style="font-size:18px;font-weight:500;letter-spacing:-.01em">Action required on {{ hero.unit }}</div>
+          <div style="font-size:13px;color:#8B8680;line-height:1.65;margin-top:8px">Recommended: <strong style="color:#1B1A18">{{ hero.disposition }}</strong>. A supervisor decision is pending.</div>
+          <div style="display:flex;gap:9px;margin-top:18px">
+            <div style="flex:1;background:#DD5F42;color:#fff;border-radius:999px;padding:13px;text-align:center;font-size:13px;cursor:pointer">Acknowledge</div>
+            <div style="width:48px;height:48px;border-radius:50%;background:#F4F2EF;display:flex;align-items:center;justify-content:center;color:#77726B;cursor:pointer">☏</div>
+          </div>
+        </div>
+        <div style="background:#141210;border-radius:24px;padding:24px;color:#fff">
+          <div style="font-size:11px;letter-spacing:.14em;color:#8E8A84;margin-bottom:14px">WHAT YOU SEE HERE</div>
+          <div style="font-size:15px;line-height:1.65;color:#E6E2DC">The station view is deliberately the narrowest page in the product. You need to know whether <em>this</em> unit is good and what to do next — not agent internals or cost models.</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6E6A64;margin-top:18px;line-height:1.7">role shop_floor · agent trace not permitted<br>enforced at the API, not just here</div>
+        </div>
+      </div>
+    </div>
+    </sc-if>
+
+    <!-- ============ INSPECT ============ -->
+    <sc-if value="{{ isInspect }}" hint-placeholder-val="{{ false }}">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start">
+      <div style="background:#F4F2EF;border-radius:24px;padding:22px">
+        <div style="font-size:16px;font-weight:500;margin-bottom:4px">Production condition</div>
+        <div style="font-size:12.5px;color:#9B968F;line-height:1.6;margin-bottom:16px">Every record is synthetic and carries its ground-truth label, so detection is scored against what was injected — not against a later human opinion.</div>
+        <div style="display:flex;flex-direction:column;gap:9px">
+          <sc-for list="{{ scenarios }}" as="s" hint-placeholder-count="5">
+            <div onClick="{{ s.pick }}" style="background:#fff;border:1.5px solid {{ s.border }};border-radius:18px;padding:15px 17px;cursor:pointer;display:flex;gap:13px;align-items:flex-start">
+              <div style="width:20px;height:20px;border-radius:50%;border:1.5px solid {{ s.border }};background:{{ s.dot }};flex:none;margin-top:1px"></div>
+              <div>
+                <div style="font-size:13.5px;font-weight:500">{{ s.label }}</div>
+                <div style="font-size:11.5px;color:#9B968F;line-height:1.55;margin-top:3px">{{ s.note }}</div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px">
+          <div style="background:#fff;border-radius:18px;padding:16px 18px">
+            <div style="font-size:11px;letter-spacing:.1em;color:#A5A099;margin-bottom:10px">FASTENER POSITION</div>
+            <div style="display:flex;align-items:center;gap:12px">
+              <div onClick="{{ posDown }}" style="width:34px;height:34px;border-radius:50%;background:#F4F2EF;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px">−</div>
+              <div style="font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:600;flex:1;text-align:center">{{ position }}</div>
+              <div onClick="{{ posUp }}" style="width:34px;height:34px;border-radius:50%;background:#141210;color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px">+</div>
+            </div>
+          </div>
+          <div style="background:#fff;border-radius:18px;padding:16px 18px">
+            <div style="font-size:11px;letter-spacing:.1em;color:#A5A099;margin-bottom:10px">CONTAINMENT SCOPE</div>
+            <div style="display:flex;align-items:center;gap:12px">
+              <div onClick="{{ scopeDown }}" style="width:34px;height:34px;border-radius:50%;background:#F4F2EF;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px">−</div>
+              <div style="font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:600;flex:1;text-align:center">{{ scope }}</div>
+              <div onClick="{{ scopeUp }}" style="width:34px;height:34px;border-radius:50%;background:#141210;color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px">+</div>
+            </div>
+          </div>
+        </div>
+        <div style="font-size:11.5px;color:#9B968F;line-height:1.6;margin-top:12px">Units since last known-good drives the cost model. One unit and two hundred units are different decisions, not the same decision scaled.</div>
+
+        <div style="display:flex;gap:10px;margin-top:18px">
+          <div onClick="{{ goWorkbench }}" style="flex:1;background:#DD5F42;color:#fff;border-radius:999px;padding:15px;text-align:center;font-size:14px;cursor:pointer">Run &amp; open evidence →</div>
+          <div style="background:#fff;border:1px solid #EDEAE6;border-radius:999px;padding:15px 22px;font-size:14px;color:#3A3733;cursor:pointer">Run only</div>
+        </div>
+      </div>
+
+      <div style="background:#fff;border:1px solid #EDEAE6;border-radius:24px;padding:22px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+          <div style="font-size:16px;font-weight:500">Last result</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:10.5px;color:#B6B1A9">{{ hero.cid }}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:14px;background:{{ andonBg }};border:1px solid {{ andonBorder }};border-radius:18px;padding:15px 18px">
+          <div style="width:11px;height:11px;border-radius:50%;background:{{ andonDot }}"></div>
+          <div style="font-size:14px;font-weight:600;letter-spacing:.08em">{{ andonLabel }}</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:11.5px;color:#7C776F">{{ andonDetail }}</div>
+        </div>
+        <div style="background:#F4F2EF;border-radius:18px;padding:18px;margin-top:14px;font-size:13.5px;line-height:1.7;color:#3A3733">{{ hero.reasoning }}</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px">
+          <div style="background:#F4F2EF;border-radius:18px;padding:16px 18px">
+            <div style="font-family:'JetBrains Mono',monospace;font-size:19px;font-weight:600;color:#DD5F42">{{ hero.cost }}</div>
+            <div style="font-size:11px;letter-spacing:.12em;color:#A5A099;margin-top:5px">EXPECTED COST</div>
+          </div>
+          <div style="background:#F4F2EF;border-radius:18px;padding:16px 18px">
+            <div style="font-family:'JetBrains Mono',monospace;font-size:19px;font-weight:600">{{ hero.ms }}</div>
+            <div style="font-size:11px;letter-spacing:.12em;color:#A5A099;margin-top:5px">TOTAL LATENCY</div>
+          </div>
+        </div>
+        <div onClick="{{ goWorkbench }}" style="background:#141210;color:#fff;border-radius:999px;padding:14px;text-align:center;font-size:13.5px;margin-top:14px;cursor:pointer">Open full evidence →</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#B6B1A9;margin-top:14px;line-height:1.7">source RULE · adjudicator · deterministic, no model call<br>ground truth contaminated_threads @ position 3</div>
+      </div>
+    </div>
+    </sc-if>
+
+    <!-- ============ WORKBENCH ============ -->
+    <sc-if value="{{ isWorkbench }}" hint-placeholder-val="{{ false }}">
+    <div style="display:grid;grid-template-columns:1.35fr 1fr;gap:16px;align-items:start">
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <div style="background:#fff;border:1px solid #EDEAE6;border-radius:24px;padding:22px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+            <div style="font-size:16px;font-weight:500">Torque–angle signature · position {{ fastener }}</div>
+            <div style="display:flex;gap:6px">
+              <sc-for list="{{ fastenerTabs }}" as="t" hint-placeholder-count="5">
+                <div onClick="{{ t.pick }}" style="width:34px;height:34px;border-radius:50%;background:{{ t.bg }};color:{{ t.fg }};display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:12px;cursor:pointer">{{ t.n }}</div>
+              </sc-for>
+            </div>
+          </div>
+          <div style="background:#F8F7F5;border-radius:20px;padding:18px">
+            <svg viewBox="0 0 620 240" style="width:100%;height:240px">
+              <rect x="52" y="{{ chart.bandY }}" width="548" height="{{ chart.bandH }}" fill="rgba(46,158,107,.10)"></rect>
+              <line x1="52" y1="20" x2="52" y2="204" stroke="#E0DCD6"></line>
+              <line x1="52" y1="204" x2="600" y2="204" stroke="#E0DCD6"></line>
+              <path d="{{ chart.baseline }}" fill="none" stroke="#C9C4BC" stroke-width="2" stroke-dasharray="5 5"></path>
+              <path d="{{ chart.actual }}" fill="none" stroke="#DD5F42" stroke-width="2.6" stroke-linecap="round"></path>
+              <line x1="{{ chart.kneeX }}" y1="20" x2="{{ chart.kneeX }}" y2="204" stroke="#DD5F42" stroke-width="1" stroke-dasharray="3 4" opacity="0.6"></line>
+              <circle cx="{{ chart.kneeX }}" cy="{{ chart.kneeY }}" r="5" fill="#DD5F42"></circle>
+              <text x="14" y="28" font-family="JetBrains Mono" font-size="10" fill="#A5A099">Nm</text>
+              <text x="548" y="222" font-family="JetBrains Mono" font-size="10" fill="#A5A099">angle °</text>
+            </svg>
+            <div style="display:flex;gap:20px;margin-top:8px;font-family:'JetBrains Mono',monospace;font-size:10.5px;color:#8B8680;flex-wrap:wrap">
+              <div><span style="display:inline-block;width:16px;height:2px;background:#DD5F42;vertical-align:middle"></span> measured</div>
+              <div><span style="display:inline-block;width:16px;height:2px;background:#C9C4BC;vertical-align:middle"></span> baseline · {{ baseline.runs }} runs @ {{ baseline.sigma }}σ</div>
+              <div><span style="display:inline-block;width:16px;height:8px;background:rgba(46,158,107,.25);vertical-align:middle"></span> spec window</div>
+            </div>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:14px">
+            <sc-for list="{{ deviations }}" as="d" hint-placeholder-count="3">
+              <div style="background:#FBEAE5;color:#8E3823;border-radius:999px;padding:8px 15px;font-size:12px">{{ d.text }}</div>
+            </sc-for>
+          </div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#B6B1A9;margin-top:14px;line-height:1.7">source MEASURED · torque-signature · endpoint {{ sel.endpoint }} · slope {{ sel.slope }} Nm/deg</div>
+        </div>
+
+        <div style="background:#F4F2EF;border-radius:24px;padding:22px">
+          <div style="font-size:16px;font-weight:500;margin-bottom:14px">Fasteners</div>
+          <div style="background:#fff;border-radius:20px;padding:6px 18px 16px">
+            <div style="display:grid;grid-template-columns:.5fr .8fr .7fr .7fr .7fr .8fr 1.2fr;gap:10px;padding:14px 4px 10px;font-size:10px;letter-spacing:.1em;color:#B6B1A9;border-bottom:1px solid #F0EDE9">
+              <div>POS</div><div>FINAL Nm</div><div>KNEE</div><div>SLOPE</div><div>SCORE</div><div>IN SPEC</div><div>LIKELY CLASS</div>
+            </div>
+            <sc-for list="{{ fasteners }}" as="f" hint-placeholder-count="5">
+              <div onClick="{{ f.pick }}" style="display:grid;grid-template-columns:.5fr .8fr .7fr .7fr .7fr .8fr 1.2fr;gap:10px;padding:12px 4px;border-bottom:1px solid #F7F5F2;font-family:'JetBrains Mono',monospace;font-size:12px;align-items:center;cursor:pointer;background:{{ f.rowBg }};border-radius:10px">
+                <div>{{ f.position }}</div><div>{{ f.final }}</div><div>{{ f.knee }}</div><div>{{ f.slope }}</div><div>{{ f.score }}</div>
+                <div style="color:{{ f.specColor }}">{{ f.spec }}</div>
+                <div><span style="font-size:10px;color:{{ f.clsFg }};background:{{ f.clsBg }};border-radius:999px;padding:4px 10px">{{ f.cls }}</span></div>
+              </div>
+            </sc-for>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#B6B1A9;padding-top:12px">source MEASURED · verifiers + signature · quality {{ dataQuality }}</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <div style="background:#141210;border-radius:24px;padding:24px;color:#fff">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+            <div style="width:34px;height:34px;border-radius:50%;background:#DD5F42;display:flex;align-items:center;justify-content:center;font-size:14px">◈</div>
+            <div style="font-size:11px;letter-spacing:.14em;color:#8E8A84">ADJUDICATOR REASONING</div>
+          </div>
+          <div style="font-size:15px;line-height:1.7;color:#EFECE7">{{ hero.reasoning }}</div>
+          <div style="border-top:1px solid #2A2724;margin-top:18px;padding-top:14px">
+            <div style="font-size:10px;letter-spacing:.14em;color:#6E6A64;margin-bottom:6px">WHY A HUMAN DECIDES</div>
+            <div style="font-size:13px;line-height:1.65;color:#B7B2AB">{{ hero.humanReason }}</div>
+          </div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6E6A64;margin-top:16px;line-height:1.8">source RULE · adjudicator · signal {{ hero.signal }}<br>conf {{ hero.conf }} · latency {{ hero.ms }} · deterministic, no model call</div>
+        </div>
+
+        <div style="background:#fff;border:1px solid #EDEAE6;border-radius:24px;padding:22px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+            <div style="font-size:16px;font-weight:500">Cost triage</div>
+            <div style="font-size:12px;color:#fff;background:#DD5F42;border-radius:999px;padding:7px 14px">{{ hero.disposition }}</div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <sc-for list="{{ costKpis }}" as="c" hint-placeholder-count="4">
+              <div style="background:#F4F2EF;border-radius:18px;padding:16px 18px">
+                <div style="font-family:'JetBrains Mono',monospace;font-size:{{ c.size }};font-weight:600;color:{{ c.color }}">{{ c.value }}</div>
+                <div style="font-size:10.5px;letter-spacing:.12em;color:#A5A099;margin-top:6px">{{ c.label }}</div>
+              </div>
+            </sc-for>
+          </div>
+          <div style="margin-top:14px;display:flex;flex-direction:column;gap:7px">
+            <sc-for list="{{ assumptions }}" as="a" hint-placeholder-count="3">
+              <div style="display:flex;gap:9px;font-size:11.5px;color:#8B8680;line-height:1.55"><span style="color:#DD5F42">·</span>{{ a.text }}</div>
+            </sc-for>
+          </div>
+          <div style="display:flex;gap:9px;margin-top:16px">
+            <div style="flex:1;background:#141210;color:#fff;border-radius:999px;padding:13px;text-align:center;font-size:13px;cursor:pointer">Approve disposition</div>
+            <div style="background:#F4F2EF;border-radius:999px;padding:13px 20px;font-size:13px;color:#3A3733;cursor:pointer">Override</div>
+          </div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#B6B1A9;margin-top:14px">source RULE · expected-cost · line halt never autonomous</div>
+        </div>
+
+        <div style="background:#F4F2EF;border-radius:24px;padding:22px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+            <div style="font-size:16px;font-weight:500">Agent workflow</div>
+            <div onClick="{{ goAgents }}" style="font-size:12px;color:#DD5F42;cursor:pointer">Open full trace →</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <sc-for list="{{ spans }}" as="s" hint-placeholder-count="5">
+              <div style="background:#fff;border-radius:16px;padding:13px 16px;display:flex;align-items:center;gap:12px">
+                <div style="font-family:'JetBrains Mono',monospace;font-size:11.5px;color:#C95034;min-width:118px">{{ s.agent }}</div>
+                <div style="font-size:12px;color:#8B8680;flex:1;line-height:1.5">{{ s.summary }}</div>
+                <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#A5A099">{{ s.ms }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </div>
+    </sc-if>
+
+    <!-- ============ AGENT WORKFLOW ============ -->
+    <sc-if value="{{ isAgents }}" hint-placeholder-val="{{ false }}">
+    <div style="display:grid;grid-template-columns:1.25fr 1fr;gap:16px;align-items:start">
+      <div style="background:#F4F2EF;border-radius:24px;padding:22px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+          <div style="font-size:16px;font-weight:500">Trace · {{ hero.unit }}</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:10.5px;color:#B6B1A9">{{ hero.cid }}</div>
+        </div>
+        <div style="font-size:12.5px;color:#9B968F;line-height:1.6;margin-bottom:18px">Vision and Process Sentinel run in parallel; their outputs meet only at the Adjudicator — which is where a fusion-only defect becomes visible.</div>
+
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <sc-for list="{{ nodes }}" as="n" hint-placeholder-count="5">
+            <div style="background:#fff;border:1.5px solid {{ n.border }};border-radius:20px;padding:16px 18px;margin-left:{{ n.indent }};position:relative">
+              <div style="display:flex;align-items:center;gap:11px">
+                <div style="width:28px;height:28px;border-radius:50%;background:{{ n.numBg }};color:{{ n.numFg }};display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:11px">{{ n.i }}</div>
+                <div style="font-size:14px;font-weight:500">{{ n.label }}</div>
+                <div style="flex:1"></div>
+                <sc-if value="{{ n.parallel }}" hint-placeholder-val="{{ false }}">
+                  <div style="font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.1em;color:#C95034;background:#FBEAE5;border-radius:999px;padding:4px 10px">PARALLEL</div>
+                </sc-if>
+                <div style="font-family:'JetBrains Mono',monospace;font-size:11.5px;color:#DD5F42">{{ n.ms }}</div>
+              </div>
+              <div style="font-family:'JetBrains Mono',monospace;font-size:10.5px;color:#B6B1A9;margin-top:8px;margin-left:39px">{{ n.note }}</div>
+              <div style="font-size:12.5px;color:#7C776F;line-height:1.55;margin-top:6px;margin-left:39px">{{ n.summary }}</div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#B6B1A9;margin-top:16px;line-height:1.8">total {{ hero.ms }} · nodes 5 · verdict path deterministic, no model call · pack wheel_assembly</div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+          <div style="background:#141210;border-radius:24px;padding:22px;color:#fff">
+            <div style="font-family:'JetBrains Mono',monospace;font-size:26px;font-weight:600">{{ hero.ms }}</div>
+            <div style="font-size:10.5px;letter-spacing:.13em;color:#8E8A84;margin-top:6px">END-TO-END</div>
+          </div>
+          <div style="background:#fff;border:1px solid #EDEAE6;border-radius:24px;padding:22px">
+            <div style="font-family:'JetBrains Mono',monospace;font-size:26px;font-weight:600;color:#DD5F42">1</div>
+            <div style="font-size:10.5px;letter-spacing:.13em;color:#A5A099;margin-top:6px">FUSION-ONLY CATCH</div>
+          </div>
+        </div>
+        <div style="background:#fff;border:1px solid #EDEAE6;border-radius:24px;padding:22px">
+          <div style="font-size:16px;font-weight:500;margin-bottom:14px">Handoffs</div>
+          <div style="display:grid;grid-template-columns:.35fr 1.2fr .7fr 2fr .35fr;gap:10px;padding:0 4px 10px;font-size:10px;letter-spacing:.1em;color:#B6B1A9;border-bottom:1px solid #F0EDE9">
+            <div>#</div><div>AGENT</div><div>MS</div><div>OUTPUT</div><div>OK</div>
+          </div>
+          <sc-for list="{{ spans }}" as="s" hint-placeholder-count="5">
+            <div style="display:grid;grid-template-columns:.35fr 1.2fr .7fr 2fr .35fr;gap:10px;padding:12px 4px;border-bottom:1px solid #F7F5F2;font-family:'JetBrains Mono',monospace;font-size:11.5px;align-items:center">
+              <div style="color:#B6B1A9">{{ s.i }}</div>
+              <div style="color:#C95034">{{ s.agent }}</div>
+              <div>{{ s.ms }}</div>
+              <div style="font-family:Poppins,sans-serif;color:#7C776F;font-size:12px;line-height:1.45">{{ s.summary }}</div>
+              <div style="color:#2E9E6B">✓</div>
+            </div>
+          </sc-for>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#B6B1A9;padding-top:12px;line-height:1.7">state QCState — every agent reads and writes the same object<br>escalation raised to human</div>
+        </div>
+        <div style="background:#F4F2EF;border-radius:24px;padding:22px">
+          <div style="font-size:11px;letter-spacing:.14em;color:#A5A099;margin-bottom:10px">THE DISAGREEMENT</div>
+          <div style="font-size:19px;font-weight:500;letter-spacing:-.015em;line-height:1.4">Vision passed. The torque signature did not.</div>
+          <div style="font-size:13px;color:#8B8680;line-height:1.7;margin-top:10px">The endpoint landed inside spec, so an endpoint-only check would have shipped this wheel. The defect lives in the disagreement between the two agents — which is the reason they are separate agents.</div>
+        </div>
+      </div>
+    </div>
+    </sc-if>
+
+    <!-- ============ ADMIN ============ -->
+    <sc-if value="{{ isAdmin }}" hint-placeholder-val="{{ false }}">
+    <div style="background:#fff;border:1px solid #EDEAE6;border-radius:24px;padding:22px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+        <div style="font-size:16px;font-weight:500">Model capability matrix</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10.5px;color:#B6B1A9">MEASURED · boot probe</div>
+      </div>
+      <div style="font-size:12.5px;color:#9B968F;line-height:1.6;margin-bottom:14px">Measured at boot, not assumed. “What if your provider changes?” is answered by a measurement, not a claim.</div>
+      <div style="display:grid;grid-template-columns:.9fr 1.4fr .8fr .7fr .7fr .8fr .6fr;gap:10px;padding:0 4px 10px;font-size:10px;letter-spacing:.1em;color:#B6B1A9;border-bottom:1px solid #F0EDE9">
+        <div>PROVIDER</div><div>MODEL</div><div>REACHABLE</div><div>VISION</div><div>JSON</div><div>STREAM</div><div style="text-align:right">P50</div>
+      </div>
+      <sc-for list="{{ capabilities }}" as="c" hint-placeholder-count="4">
+        <div style="display:grid;grid-template-columns:.9fr 1.4fr .8fr .7fr .7fr .8fr .6fr;gap:10px;padding:13px 4px;border-bottom:1px solid #F7F5F2;font-family:'JetBrains Mono',monospace;font-size:12px;align-items:center;background:{{ c.rowBg }};border-radius:10px">
+          <div>{{ c.provider }}</div>
+          <div style="color:#7C776F;font-size:11px">{{ c.model }}</div>
+          <div style="color:{{ c.reachFg }}">{{ c.reach }}</div>
+          <div style="color:{{ c.visionFg }}">{{ c.vision }}</div>
+          <div style="color:{{ c.jsonFg }}">{{ c.json }}</div>
+          <div style="color:{{ c.streamFg }}">{{ c.stream }}</div>
+          <div style="text-align:right;color:#8B8680">{{ c.p50 }}</div>
+        </div>
+      </sc-for>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#B6B1A9;padding-top:12px">vision test discriminating — the model must name two solid colours</div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px;align-items:start">
+      <div style="background:#F4F2EF;border-radius:24px;padding:22px">
+        <div style="font-size:16px;font-weight:500;margin-bottom:14px">Tier resolution</div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <sc-for list="{{ tiers }}" as="t" hint-placeholder-count="3">
+            <div style="background:#fff;border-radius:18px;padding:16px 18px">
+              <div style="display:flex;align-items:center;gap:10px">
+                <div style="font-size:13.5px;font-weight:500;min-width:80px">{{ t.name }}</div>
+                <div style="font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.08em;color:{{ t.fg }};background:{{ t.bg }};border-radius:999px;padding:4px 11px">{{ t.status }}</div>
+              </div>
+              <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#8B8680;margin-top:9px;line-height:1.7">{{ t.chain }}<br><span style="color:#B6B1A9">↳ {{ t.fallback }}</span></div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#B6B1A9;margin-top:14px;line-height:1.7">config config/models.yaml · secrets env only<br>skipped anthropic — no key present</div>
+      </div>
+
+      <div style="background:#F4F2EF;border-radius:24px;padding:22px">
+        <div style="font-size:16px;font-weight:500;margin-bottom:14px">Roles &amp; permissions</div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <sc-for list="{{ roles }}" as="r" hint-placeholder-count="3">
+            <div style="background:#fff;border-radius:18px;padding:16px 18px">
+              <div style="display:flex;align-items:center;gap:10px">
+                <div style="font-size:13.5px;font-weight:500">{{ r.label }}</div>
+                <div style="font-family:'JetBrains Mono',monospace;font-size:10.5px;color:#B6B1A9">{{ r.key }}</div>
+                <div style="flex:1"></div>
+                <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6E6A64;background:#F4F2EF;border-radius:999px;padding:5px 11px">{{ r.perms }} perms</div>
+              </div>
+              <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#8B8680;margin-top:8px">home {{ r.home }}</div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#B6B1A9;margin-top:14px;line-height:1.7">source config/rbac.yaml · default deny<br>separation of duties asserted at boot</div>
+      </div>
+    </div>
+
+    <div style="background:#fff;border:1px solid #EDEAE6;border-radius:24px;padding:22px;margin-top:16px">
+      <div style="font-size:16px;font-weight:500;margin-bottom:16px">System health</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px">
+        <sc-for list="{{ health }}" as="h" hint-placeholder-count="4">
+          <div style="background:#F4F2EF;border-radius:20px;padding:18px 20px">
+            <div style="font-family:'JetBrains Mono',monospace;font-size:21px;font-weight:600;color:{{ h.color }}">{{ h.value }}</div>
+            <div style="font-size:10.5px;letter-spacing:.12em;color:#A5A099;margin-top:6px">{{ h.label }}</div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+    </sc-if>
+
+    <div style="display:flex;gap:20px;flex-wrap:wrap;font-family:'JetBrains Mono',monospace;font-size:10px;color:#B6B1A9;padding:26px 6px 4px;margin-top:12px;border-top:1px solid #F0EDE9">
+      <span>DefectSense v1.0.0</span><span>pack: wheel_assembly</span><span>ALL DATA SYNTHETIC — not real plant data</span><span>verdict path is deterministic; no model call</span><span style="color:#DD5F42">API docs</span>
+    </div>
+  </div>
+</div>
+</sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1512,&quot;height&quot;:1000}}">
+class Component extends DCLogic {
+  state = { page: "dashboard", user: "priya", scenario: "contaminated", position: 3, scope: 12, fastener: 3 };
+
+  users = {
+    priya:  { name: "Priya Raghavan", role: "Quality Authority", initials: "PR", label: "qa_lead", home: "dashboard" },
+    imran:  { name: "Imran Sheikh",   role: "Shop Floor",        initials: "IS", label: "shop_floor", home: "station" },
+    lena:   { name: "Lena Ortiz",     role: "Platform Admin",    initials: "LO", label: "admin", home: "admin" },
+  };
+
+  go = (p) => () => this.setState({ page: p });
+
+  fastenerData = [
+    { position: 1, final: 141.8, knee: 22.4, slope: 6.31, score: 0.08, spec: true,  cls: null,             anom: false, fusion: false },
+    { position: 2, final: 143.2, knee: 22.9, slope: 6.28, score: 0.11, spec: true,  cls: null,             anom: false, fusion: false },
+    { position: 3, final: 142.6, knee: 31.7, slope: 4.12, score: 0.87, spec: true,  cls: "cross-thread",   anom: true,  fusion: true  },
+    { position: 4, final: 140.9, knee: 23.1, slope: 6.22, score: 0.14, spec: true,  cls: null,             anom: false, fusion: false },
+    { position: 5, final: 138.4, knee: 24.0, slope: 6.05, score: 0.31, spec: false, cls: "soft-joint",     anom: true,  fusion: false },
+  ];
+
+  spanData = [
+    { agent: "ingestion",         ms: 1.42,  summary: "5 fasteners · DQ complete · correlation id issued" },
+    { agent: "vision_inspector",  ms: 18.63, summary: "all geometric verifiers pass — no visible defect" },
+    { agent: "process_sentinel",  ms: 22.07, summary: "position 3 knee +9.3° / slope −2.19 Nm/deg vs baseline" },
+    { agent: "adjudicator",       ms: 3.88,  summary: "vision/process disagree → fusion-only defect, conf 0.64" },
+    { agent: "cost_triage",       ms: 2.11,  summary: "rework 12 units ₹1,84,000 vs field failure ₹9,60,000" },
+  ];
+
+  curve(anom) {
+    const kneeX = anom ? 0.46 : 0.32, slope = anom ? 0.62 : 1.0;
+    const pts = [];
+    for (let i = 0; i <= 60; i++) {
+      const t = i / 60;
+      let y;
+      if (t < 0.14) y = t * 0.9;
+      else if (t < kneeX) y = 0.126 + (t - 0.14) * 2.4 * slope;
+      else {
+        const top = 0.126 + (kneeX - 0.14) * 2.4 * slope;
+        y = top + (1 - top) * (1 - Math.exp(-(t - kneeX) * 6.5));
+      }
+      pts.push([52 + t * 548, 204 - Math.min(y, 1.02) * 176]);
+    }
+    return { d: "M" + pts.map(p => p[0].toFixed(1) + "," + p[1].toFixed(1)).join(" L"), kneeX: 52 + kneeX * 548, kneeY: pts[Math.round(kneeX * 60)][1] };
+  }
+
+  renderVals() {
+    const s = this.state, u = this.users[s.user];
+    const page = s.page;
+    const perms = { shop_floor: ["station"], qa_lead: ["station", "dashboard", "inspect", "agents", "workbench"], admin: ["station", "dashboard", "inspect", "agents", "workbench", "admin"] };
+    const allowed = perms[u.label];
+
+    const navDefs = [["station", "Station"], ["dashboard", "Dashboard"], ["inspect", "Inspect"], ["agents", "Agent Workflow"], ["admin", "Admin"]];
+    const nav = navDefs.filter(([k]) => allowed.includes(k)).map(([k, label]) => ({
+      label, go: this.go(k),
+      bg: page === k || (k === "dashboard" && page === "workbench") ? "#141210" : "transparent",
+      fg: page === k || (k === "dashboard" && page === "workbench") ? "#ffffff" : "#77726B",
+      fw: page === k ? "500" : "400",
+    }));
+
+    const titles = {
+      station:   ["Station · Wheel Assembly", "Is this unit good?"],
+      dashboard: ["Quality dashboard", "Authority over the line."],
+      inspect:   ["Submit inspection", "Run a production condition."],
+      workbench: ["Defect workbench", "Everything behind one verdict."],
+      agents:    ["Agent workflow", "Five specialists, one state."],
+      admin:     ["Administration", "Platform, not quality."],
+    };
+    const [pageTitle, pageSub] = titles[page] || titles.dashboard;
+
+    const hero = {
+      unit: "WA-2419-0387", cid: "8f2c41ae-77b0-4d19", verdictText: "DEFECT", signal: "torque signature",
+      conf: "0.64", cost: "₹1,84,000", ms: "48.1ms", disposition: "REWORK · contain 12 units",
+      color: "#C95034",
+      reasoning: "Vision cleared this wheel and the torque endpoint landed at 142.6 Nm — inside the 138–148 Nm window. The signature tells a different story: position 3 reaches its knee 9.3° late with an elastic slope 35% below baseline, the shape of a fastener pulling through damaged threads rather than seating. Endpoint-only inspection ships this wheel.",
+      humanReason: "Confidence 0.64 sits inside the 0.45–0.70 ambiguity band and the containment decision crosses ₹50,000. Rework and quarantine are within 10% of each other on expected cost — the engine declines to break a near-tie silently.",
+    };
+
+    const verdictMap = { defect: { bg: "#FBEAE5", border: "#F2CFC5", dot: "#DD5F42", label: "DEFECT" } };
+    const v = verdictMap.defect;
+
+    const feedRaw = [
+      ["WA-2419-0387", "defect", "REWORK · contain 12", "48.1"],
+      ["WA-2419-0386", "pass", "—", "41.7"],
+      ["WA-2419-0385", "escalate", "SUPERVISOR REVIEW", "52.9"],
+      ["WA-2419-0384", "pass", "—", "39.4"],
+      ["WA-2419-0383", "pass", "—", "44.2"],
+      ["WA-2419-0382", "defect", "QUARANTINE", "50.6"],
+      ["WA-2419-0381", "pass", "—", "38.8"],
+      ["WA-2419-0380", "pass", "—", "42.3"],
+    ];
+    const badgeStyle = {
+      pass:     { bg: "#EAF6F0", fg: "#237A53", badge: "✓ pass" },
+      defect:   { bg: "#FBEAE5", fg: "#C95034", badge: "✗ defect" },
+      escalate: { bg: "#FDF3E0", fg: "#9B6B10", badge: "⚠ escalate" },
+    };
+    const feed = feedRaw.map(([unit, verdict, action, ms]) => ({
+      unit, action, ms: ms + "ms", ...badgeStyle[verdict], open: this.go("workbench"),
+    }));
+
+    const pending = [
+      { unit: "WA-2419-0387", reason: "Fusion-only defect at position 3; near-tie between rework and quarantine.", cost: "₹1,84,000", badge: "✗ defect", bg: "#FBEAE5", fg: "#C95034", open: this.go("workbench") },
+      { unit: "WA-2419-0385", reason: "Confidence 0.58 — inside the ambiguity band, no clear primary signal.", cost: "₹94,500", badge: "⚠ escalate", bg: "#FDF3E0", fg: "#9B6B10", open: this.go("workbench") },
+      { unit: "WA-2419-0382", reason: "Containment scope 34 units pushes cost past the supervisor threshold.", cost: "₹5,21,000", badge: "✗ defect", bg: "#FBEAE5", fg: "#C95034", open: this.go("workbench") },
+    ];
+
+    const sel = this.fastenerData.find(f => f.position === s.fastener) || this.fastenerData[2];
+    const c = this.curve(sel.anom), base = this.curve(false);
+
+    const fasteners = this.fastenerData.map(f => ({
+      position: f.position, final: f.final.toFixed(1), knee: f.knee.toFixed(1) + "°",
+      slope: f.slope.toFixed(2), score: f.score.toFixed(2),
+      spec: f.spec ? "✓ yes" : "✗ no", specColor: f.spec ? "#237A53" : "#C95034",
+      cls: f.cls || "—", clsBg: f.fusion ? "#DD5F42" : f.cls ? "#FDF3E0" : "transparent",
+      clsFg: f.fusion ? "#ffffff" : f.cls ? "#9B6B10" : "#B6B1A9",
+      rowBg: f.position === s.fastener ? "#FDF7F5" : "transparent",
+      pick: () => this.setState({ fastener: f.position }),
+    }));
+
+    const scenarioDefs = [
+      ["clean", "Nominal run", "Everything in spec. The system should pass it and say why."],
+      ["contaminated", "Contaminated threads", "Endpoint lands in spec, vision passes — DefectSense flags it anyway."],
+      ["cross", "Cross-threaded fastener", "Knee arrives late; elastic slope collapses."],
+      ["soft", "Soft joint", "Endpoint drifts low with a normal-shaped curve."],
+      ["novel", "Unseen condition", "No class matches — the system says so instead of guessing."],
+    ];
+
+    return {
+      isLogin: page === "login", isApp: page !== "login",
+      isStation: page === "station", isDashboard: page === "dashboard", isInspect: page === "inspect",
+      isWorkbench: page === "workbench", isAgents: page === "agents", isAdmin: page === "admin",
+      nav, pageTitle, pageSub,
+      userName: u.name, userRole: u.role, userInitials: u.initials,
+      loginUser: s.user,
+      signIn: this.go(this.users[s.user].home),
+      signOut: this.go("login"),
+      accounts: [
+        { initials: "PR", display_name: "Priya Raghavan", label: "qa_lead", description: "Full evidence, agent reasoning and disposition authority.", pick: () => this.setState({ user: "priya" }) },
+        { initials: "IS", display_name: "Imran Sheikh", label: "shop_floor", description: "Live verdict per unit. No agent internals, no cost models.", pick: () => this.setState({ user: "imran" }) },
+        { initials: "LO", display_name: "Lena Ortiz", label: "admin", description: "Platform config and health — cannot rule on quality.", pick: () => this.setState({ user: "lena" }) },
+      ],
+
+      andonBg: v.bg, andonBorder: v.border, andonDot: v.dot, andonLabel: v.label, andonHuman: true,
+      andonDetail: hero.unit + " · fusion-only · confidence " + hero.conf + " · " + hero.ms,
+      openLatest: this.go("workbench"), goWorkbench: this.go("workbench"), goAgents: this.go("agents"),
+
+      hero,
+      m: { inspected: "1,284", defects: "37", fusion: "9", fpy: "97.1%", p50: "42ms", p95: "68ms", costAtRisk: "₹8,04,500" },
+      fpyRing: "conic-gradient(#DD5F42 0% 97%, #2E2B27 97% 100%)",
+      uptimeDots: Array.from({ length: 30 }, (_, i) => ({ c: i < 22 ? "#DD5F42" : i < 26 ? "#F2C0B1" : "#EAE7E2" })),
+      latencyBars: [38, 52, 44, 61, 49, 72, 55, 46, 88].map((h, i) => ({ h: h + "%", c: i === 8 ? "#DD5F42" : "#EFE7E3" })),
+      torqueBars: [40, 62, 35, 78, 50, 88, 44, 66, 30, 72, 55, 92, 48, 60].map((h, i) => ({ h: h + "%", c: [3, 5, 11].includes(i) ? "#DD5F42" : "#E8E4DE" })),
+      pipelineMini: [
+        { glyph: "◉", label: "Vision inspector", ms: "18.6ms", bg: "#F4F2EF", fg: "#6E6A64" },
+        { glyph: "∿", label: "Process sentinel", ms: "22.1ms", bg: "#FBEAE5", fg: "#C95034" },
+        { glyph: "⚖", label: "Adjudicator", ms: "3.9ms", bg: "#F4F2EF", fg: "#6E6A64" },
+      ],
+      feed, pending, pendingCount: pending.length,
+
+      stationKpis: [
+        { glyph: "▤", value: "1,284", label: "UNITS THIS SHIFT", color: "#1B1A18" },
+        { glyph: "✗", value: "37", label: "DEFECTS", color: "#C95034" },
+        { glyph: "◎", value: "97.1%", label: "FIRST PASS YIELD", color: "#237A53" },
+        { glyph: "◷", value: "68ms", label: "P95 INSPECTION TIME", color: "#1B1A18" },
+      ],
+
+      scenarios: scenarioDefs.map(([id, label, note]) => ({
+        label, note,
+        border: s.scenario === id ? "#DD5F42" : "#EDEAE6",
+        dot: s.scenario === id ? "#DD5F42" : "transparent",
+        pick: () => this.setState({ scenario: id }),
+      })),
+      position: s.position, scope: s.scope,
+      posUp: () => this.setState(p => ({ position: Math.min(5, p.position + 1) })),
+      posDown: () => this.setState(p => ({ position: Math.max(1, p.position - 1) })),
+      scopeUp: () => this.setState(p => ({ scope: p.scope + 1 })),
+      scopeDown: () => this.setState(p => ({ scope: Math.max(1, p.scope - 1) })),
+
+      fastener: s.fastener,
+      fastenerTabs: this.fastenerData.map(f => ({
+        n: f.position, pick: () => this.setState({ fastener: f.position }),
+        bg: f.position === s.fastener ? "#141210" : f.anom ? "#FBEAE5" : "#F4F2EF",
+        fg: f.position === s.fastener ? "#ffffff" : f.anom ? "#C95034" : "#77726B",
+      })),
+      chart: { actual: c.d, baseline: base.d, kneeX: c.kneeX.toFixed(1), kneeY: c.kneeY.toFixed(1), bandY: 30, bandH: 26 },
+      baseline: { runs: 480, sigma: 3 },
+      sel: { endpoint: sel.final.toFixed(1) + " Nm " + (sel.spec ? "IN SPEC" : "OUT OF SPEC"), slope: sel.slope.toFixed(2) },
+      deviations: sel.anom
+        ? [{ text: "knee +" + (sel.knee - 22.6).toFixed(1) + "° late" }, { text: "elastic slope −" + (6.28 - sel.slope).toFixed(2) + " Nm/deg" }, { text: "anomaly score " + sel.score.toFixed(2) }]
+        : [{ text: "within baseline envelope" }],
+      dataQuality: "complete",
+      fasteners,
+      costKpis: [
+        { value: "₹1,84,000", label: "EXPECTED COST", color: "#DD5F42", size: "19px" },
+        { value: "₹1.2L – ₹3.1L", label: "INTERVAL", color: "#1B1A18", size: "15px" },
+        { value: "REWORK", label: "RECOMMENDATION", color: "#1B1A18", size: "17px" },
+        { value: "HUMAN", label: "AUTHORITY", color: "#9B6B10", size: "17px" },
+      ],
+      assumptions: [
+        { text: "Rework cost assumes 22 min at station 4 plus one replacement fastener set." },
+        { text: "Field-failure branch weighted at 0.31 given the cross-thread class." },
+        { text: "Containment scope of 12 units is the count since the last known-good." },
+      ],
+      spans: this.spanData.map((sp, i) => ({ i: i + 1, agent: sp.agent, ms: sp.ms.toFixed(2) + "ms", summary: sp.summary })),
+      nodes: this.spanData.map((sp, i) => {
+        const par = sp.agent === "vision_inspector" || sp.agent === "process_sentinel";
+        const notes = {
+          ingestion: "validate · DQ gate · correlation id",
+          vision_inspector: "geometric verifiers (exact)",
+          process_sentinel: "torque-angle signature",
+          adjudicator: "reconciles disagreement",
+          cost_triage: "expected cost per action",
+        };
+        const labels = { ingestion: "Ingestion", vision_inspector: "Vision", process_sentinel: "Process Sentinel", adjudicator: "Adjudicator", cost_triage: "Cost Triage" };
+        return {
+          i: i + 1, label: labels[sp.agent], note: notes[sp.agent], summary: sp.summary,
+          ms: sp.ms.toFixed(2) + "ms", parallel: par,
+          indent: par ? "34px" : "0px",
+          border: par ? "#F2CFC5" : "#EDEAE6",
+          numBg: par ? "#DD5F42" : "#141210", numFg: "#ffffff",
+        };
+      }),
+
+      capabilities: [
+        { provider: "openai", model: "gpt-4o", reach: "✓ yes", vision: "✓ yes", json: "✓ yes", stream: "✓ yes", p50: "412ms", ok: true },
+        { provider: "openai", model: "gpt-4o-vision-preview", reach: "✗ no", vision: "— no", json: "— no", stream: "— no", p50: "—", ok: false },
+        { provider: "azure", model: "gpt-4o-mini", reach: "✓ yes", vision: "— no", json: "✓ yes", stream: "✓ yes", p50: "268ms", ok: true },
+        { provider: "local", model: "deterministic-stub", reach: "✓ yes", vision: "— no", json: "✓ yes", stream: "— no", p50: "2ms", ok: true },
+      ].map(c2 => ({
+        ...c2, rowBg: c2.ok ? "transparent" : "#FDF4F2",
+        reachFg: c2.reach.startsWith("✓") ? "#237A53" : "#C95034",
+        visionFg: c2.vision.startsWith("✓") ? "#237A53" : "#B6B1A9",
+        jsonFg: c2.json.startsWith("✓") ? "#237A53" : "#B6B1A9",
+        streamFg: c2.stream.startsWith("✓") ? "#237A53" : "#B6B1A9",
+      })),
+      tiers: [
+        { name: "reasoning", status: "available", fg: "#237A53", bg: "#EAF6F0", chain: "openai:gpt-4o  →  azure:gpt-4o-mini", fallback: "deterministic-stub" },
+        { name: "vision", status: "fallback", fg: "#C95034", bg: "#FBEAE5", chain: "openai:gpt-4o", fallback: "geometric verifiers only" },
+        { name: "cheap", status: "available", fg: "#237A53", bg: "#EAF6F0", chain: "azure:gpt-4o-mini", fallback: "deterministic-stub" },
+      ],
+      roles: [
+        { label: "Shop Floor", key: "shop_floor", perms: 2, home: "/station" },
+        { label: "Quality Authority", key: "qa_lead", perms: 7, home: "/dashboard" },
+        { label: "Platform Admin", key: "admin", perms: 5, home: "/admin" },
+      ],
+      health: [
+        { value: "ok", label: "API", color: "#237A53" },
+        { value: "ok", label: "WEBSOCKET FEED", color: "#237A53" },
+        { value: "480", label: "BASELINE RUNS", color: "#1B1A18" },
+        { value: "13d 4h", label: "UPTIME", color: "#1B1A18" },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../auth";
-import { Andon, Empty, Kpi, Panel, Provenance, VerdictBadge } from "../components/Shared";
+import { Andon, Empty, Panel, Provenance, VerdictBadge } from "../components/Shared";
+import { usePageTitle } from "../pageHeader";
 import type { Inspection, Metrics } from "../types";
 import { useLiveFeed } from "../useLiveFeed";
 
@@ -17,9 +18,9 @@ import { useLiveFeed } from "../useLiveFeed";
  */
 export function Station() {
   const { authFetch, user } = useAuth();
-  const feed = useLiveFeed();
+  usePageTitle("Station · Wheel Assembly", "Is this unit good?");
+  const feed = useLiveFeed(authFetch);
   const [metrics, setMetrics] = useState<Metrics>({ inspected: 0 });
-  const [acknowledged, setAcknowledged] = useState<Set<string>>(new Set());
 
   const latest: Inspection | null = feed[0] ?? null;
 
@@ -32,80 +33,155 @@ export function Station() {
     return () => clearInterval(t);
   }, [authFetch, feed.length]);
 
-  const needsAck = latest && latest.verdict !== "pass" && !acknowledged.has(latest.correlation_id);
+  const [acknowledged, setAcknowledged] = useState<Record<string, boolean>>({});
+
+  const handleAcknowledge = (corrId: string) => {
+    setAcknowledged((prev) => ({ ...prev, [corrId]: true }));
+  };
+
+  const assignedUnits = feed.filter((f) => f.verdict !== "pass" && f.assigned_to_name);
 
   return (
     <>
-      <h1 className="page-title">Station · Wheel Assembly</h1>
-      <p className="page-sub">
-        Signed in as {user?.display_name}. You see the live verdict for each unit
-        and acknowledge anything that is not a pass.
-      </p>
-
       <Andon inspection={latest} idleText="Waiting for the next unit from the line." />
 
-      {needsAck && (
-        <Panel>
-          <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
-            <div style={{ flex: 1, minWidth: 260 }}>
-              <div style={{ fontWeight: 600, marginBottom: 6 }}>
-                Action required on {latest.unit_id}
-              </div>
-              <div className="muted" style={{ lineHeight: 1.6 }}>
-                Recommended: <strong>{latest.disposition}</strong>.
-                {latest.requires_human && " A supervisor decision is pending."}
-              </div>
+      {/* Shop Floor Rework Queue Card */}
+      {assignedUnits.length > 0 && (
+        <div style={{ marginTop: 16 }}>
+          <Panel tone="soft" title="📋 Shop Floor Rework Queue (Assigned Tasks)">
+            <div style={{ padding: "8px 0" }}>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Unit ID</th>
+                    <th>Verdict</th>
+                    <th>Required Disposition</th>
+                    <th>Assigned To</th>
+                    <th>Assigned By</th>
+                    <th>Operator Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {assignedUnits.map((f) => {
+                    const isDone = acknowledged[f.correlation_id];
+                    return (
+                      <tr key={f.correlation_id}>
+                        <td style={{ fontWeight: 600 }}>{f.unit_id}</td>
+                        <td><VerdictBadge verdict={f.verdict} fusionOnly={f.fusion_only} /></td>
+                        <td style={{ fontFamily: "var(--sans)", color: "var(--accent-molten)", fontWeight: 600 }}>
+                          {f.disposition.toUpperCase()}
+                        </td>
+                        <td>
+                          <span style={{ color: "var(--accent-molten)", fontWeight: 600 }}>
+                            👤 {f.assigned_to_name}
+                          </span>
+                        </td>
+                        <td style={{ color: "var(--text-muted)", fontSize: 12 }}>
+                          {f.assigned_by_name ? f.assigned_by_name : <span style={{ fontStyle: "italic", color: "var(--text-muted-2)" }}>—</span>}
+                        </td>
+                        <td>
+                          {isDone ? (
+                            <span className="pill tone-nominal" style={{ fontSize: 11, padding: "4px 10px" }}>
+                              ✓ Rework In Progress
+                            </span>
+                          ) : (
+                            <button
+                              className="molten"
+                              onClick={() => handleAcknowledge(f.correlation_id)}
+                              style={{ padding: "6px 14px", fontSize: 12 }}
+                            >
+                              Acknowledge & Start Rework →
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
-            <button className="primary"
-                    onClick={() => setAcknowledged((s) => new Set(s).add(latest.correlation_id))}>
-              Acknowledge
-            </button>
-          </div>
-        </Panel>
+          </Panel>
+        </div>
       )}
 
-      <div className="grid cols-4" style={{ marginTop: 16 }}>
-        <Panel><Kpi value={metrics.inspected} label="Units this shift" /></Panel>
-        <Panel><Kpi value={metrics.defects ?? 0} label="Defects" color="var(--state-critical)" /></Panel>
-        <Panel>
-          <Kpi value={metrics.first_pass_yield !== undefined
-            ? `${(metrics.first_pass_yield * 100).toFixed(1)}%` : "—"}
-            label="First pass yield" color="var(--state-nominal)" />
-        </Panel>
-        <Panel>
-          <Kpi value={metrics.p95_ms !== undefined ? `${metrics.p95_ms.toFixed(0)}ms` : "—"}
-               label="p95 inspection time" />
-        </Panel>
-      </div>
-
-      <div style={{ marginTop: 16 }}>
-        <Panel title="Recent units">
-          {feed.length === 0 && <Empty>
-            No units yet. A QA user can submit an inspection from the Inspect page.
-          </Empty>}
-          {feed.length > 0 && (
-            <table>
-              <thead>
-                <tr><th>Unit</th><th>Verdict</th><th>Action</th><th>Time</th></tr>
-              </thead>
-              <tbody>
-                {feed.slice(0, 12).map((f) => (
-                  <tr key={f.correlation_id}>
-                    <td>{f.unit_id}</td>
-                    <td><VerdictBadge verdict={f.verdict} fusionOnly={f.fusion_only} /></td>
-                    <td>{f.verdict === "pass" ? "—" : f.disposition}</td>
-                    <td>{f.total_ms.toFixed(1)}ms</td>
+      <div className="grid" style={{ gridTemplateColumns: "1.5fr 1fr", marginTop: 16, alignItems: "start" }}>
+        <Panel tone="soft" title={`Recent units (${metrics.inspected ?? 0} shift total)`}
+               right={<span className="pill tone-outline">Last 5</span>}>
+          <div className="panel" style={{ padding: "6px 18px 14px" }}>
+            {feed.length === 0 && <Empty>
+              No units yet. A QA user can submit an inspection from the Inspect page.
+            </Empty>}
+            {feed.length > 0 && (
+              <table>
+                <thead>
+                  <tr>
+                    <th>Unit</th>
+                    <th>Verdict</th>
+                    <th>Action</th>
+                    <th>Assigned To</th>
+                    <th style={{ textAlign: "right" }}>Time</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-          <Provenance items={[
-            ["source", "MEASURED · verifiers + torque signature"],
-            ["pack", "wheel_assembly"],
-            ["data", "SYNTHETIC"],
-          ]} />
+                </thead>
+                <tbody>
+                  {feed.slice(0, 5).map((f) => (
+                    <tr key={f.correlation_id}>
+                      <td style={{ whiteSpace: "nowrap" }}>{f.unit_id}</td>
+                      <td><VerdictBadge verdict={f.verdict} fusionOnly={f.fusion_only} /></td>
+                      <td style={{ fontFamily: "var(--sans)", color: "var(--text-muted)" }}>
+                        {f.verdict === "pass" ? "—" : f.disposition}
+                      </td>
+                      <td style={{ fontSize: 12, whiteSpace: "nowrap" }}>
+                        {f.verdict === "pass" ? "—" : f.assigned_to_name ? (
+                          <span style={{ color: "var(--accent-molten)", fontWeight: 600 }}>👤 {f.assigned_to_name}</span>
+                        ) : (
+                          <span style={{ color: "var(--text-muted-4)" }}>—</span>
+                        )}
+                      </td>
+                      <td style={{ textAlign: "right", whiteSpace: "nowrap" }}>{f.total_ms.toFixed(1)}ms</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+            <Provenance items={[
+              ["source", "MEASURED · verifiers + torque signature"],
+              ["pack", "wheel_assembly"],
+              ["data", "SYNTHETIC"],
+            ]} />
+          </div>
         </Panel>
+
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          {latest && (
+            <Panel title="Action Required">
+              <div style={{ fontSize: 18, fontWeight: 500, letterSpacing: "-0.01em", marginTop: 4 }}>
+                Verdict: {latest.verdict.toUpperCase()}
+              </div>
+              <div className="muted" style={{ fontSize: 13, lineHeight: 1.65, marginTop: 8 }}>
+                Required disposition: <strong style={{ color: "var(--ink)" }}>{latest.disposition}</strong>.
+                <br />
+                Supervisor approval required: {latest.requires_human ? "Yes" : "No"}
+              </div>
+              <div style={{marginTop: 18, fontSize: 13, color: "var(--text-muted)"}}>
+                No action available for your role. See QA to proceed.
+              </div>
+            </Panel>
+          )}
+          <Panel tone="dark">
+            <div style={{ fontSize: 11, letterSpacing: "0.14em", color: "#8E8A84", marginBottom: 14 }}>
+              WHAT YOU SEE HERE
+            </div>
+            <div style={{ fontSize: 15, lineHeight: 1.65, color: "#E6E2DC" }}>
+              The station view is deliberately the narrowest page in the product.
+              You need to know whether <em>this</em> unit is good and what to do
+              next — not agent internals or cost models.
+            </div>
+            <div className="mono" style={{ fontSize: 10, color: "#6E6A64", marginTop: 18, lineHeight: 1.7 }}>
+              role {user?.role.toLowerCase()} · agent trace not permitted<br />
+              enforced at the API, not just here
+            </div>
+          </Panel>
+        </div>
       </div>
     </>
   );

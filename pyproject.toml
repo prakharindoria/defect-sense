@@ -36,7 +36,9 @@ dependencies = [
 [project.optional-dependencies]
 # Postgres / Redis / MinIO profile. Not required for PROFILE=local.
 server = [
-    "psycopg[binary]>=3.2",
+    # Async MongoDB driver. Optional on purpose: without it the app runs on the
+    # in-memory adapters and says so, rather than failing to boot.
+    "motor>=3.6",
     "redis>=5.2",
     "minio>=7.2",
 ]

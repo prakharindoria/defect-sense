@@ -225,6 +225,51 @@ def check_ollama() -> Check:
     )
 
 
+def check_mongo() -> Check:
+    """Whether inspections will actually survive a restart."""
+    url = os.environ.get("MONGO_URL", "").strip()
+    if not url:
+        return Check(
+            "mongo", Status.FAIL, "MONGO_URL not set", Level.DEGRADED,
+            remedy=(
+                "Set MONGO_URL in .env. A free Atlas cluster needs no install: "
+                "mongodb+srv://<user>:<pass>@<cluster>/?retryWrites=true"
+            ),
+            consequence=(
+                "Inspections, traces and audit records are held in memory and are "
+                "LOST ON RESTART. The product works; the history does not persist."
+            ),
+        )
+    if importlib.util.find_spec("motor") is None:
+        return Check(
+            "mongo", Status.FAIL, "MONGO_URL set but motor is not installed", Level.DEGRADED,
+            remedy="python tasks.py install server",
+            consequence="Falls back to in-memory storage.",
+        )
+
+    import asyncio  # noqa: PLC0415
+
+    from forge.infrastructure.persistence.mongo import (  # noqa: PLC0415
+        MongoUnavailableError,
+        connect,
+    )
+
+    started = time.perf_counter()
+    try:
+        asyncio.run(connect(url, timeout_ms=4000))
+    except MongoUnavailableError as exc:
+        return Check(
+            "mongo", Status.FAIL, str(exc)[:90], Level.DEGRADED,
+            remedy="Check the connection string, network egress and Atlas IP allowlist.",
+            consequence="Falls back to in-memory storage; history is lost on restart.",
+        )
+    except Exception as exc:  # noqa: BLE001 - a doctor must never itself crash
+        return Check("mongo", Status.UNKNOWN, f"{type(exc).__name__}: {exc}"[:90], Level.DEGRADED)
+
+    ms = int((time.perf_counter() - started) * 1000)
+    return Check("mongo", Status.OK, f"reachable in {ms}ms — inspections persist")
+
+
 def check_llm_config() -> Check:
     """At least one LLM provider must be configured, or every tier lands on the fake adapter."""
     configured = [
@@ -331,6 +376,7 @@ def collect() -> Report:
     for c in check_python_deps():
         report.add(c)
     report.add(check_tls())
+    report.add(check_mongo())
     report.add(check_llm_config())
     report.add(check_ollama())
     for c in check_live_apis():

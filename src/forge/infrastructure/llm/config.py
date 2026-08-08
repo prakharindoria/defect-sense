@@ -166,9 +166,23 @@ def load(path: Path | str = DEFAULT_CONFIG_PATH) -> ModelConfig:
                 f"{[t.value for t in ModelTier]}"
             ) from None
 
-        chain = tuple(
-            p for entry in (spec.get("chain") or []) if (p := build(entry)) and p.is_configured
-        )
+        # Dedupe on (provider, model). The head of a chain is an ${ENV} override
+        # that often resolves to a model already listed further down, and a
+        # duplicate costs a wasted probe at boot plus a pointless retry against
+        # an endpoint we just saw fail. First occurrence wins, so the override
+        # keeps its position.
+        seen: set[tuple[str, str]] = set()
+        chain_entries: list[ProviderConfig] = []
+        for entry in spec.get("chain") or []:
+            p = build(entry)
+            if p is None or not p.is_configured:
+                continue
+            key = (p.name, p.model)
+            if key in seen:
+                continue
+            seen.add(key)
+            chain_entries.append(p)
+        chain = tuple(chain_entries)
         b = spec.get("budget") or {}
         tiers[tier] = TierConfig(
             tier=tier,

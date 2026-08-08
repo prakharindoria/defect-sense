@@ -19,6 +19,7 @@ test enforces that allowance explicitly rather than leaving it to convention.
 
 from __future__ import annotations
 
+import operator
 from datetime import UTC, datetime
 from typing import Annotated, Self
 
@@ -106,6 +107,27 @@ class BudgetLedger(BaseModel):
 # ---------------------------------------------------------------------------
 # Inputs
 # ---------------------------------------------------------------------------
+class SignalRecord(BaseModel):
+    """The raw measured series behind a verdict.
+
+    Persisted with the state on purpose. The extracted features tell you *what*
+    was concluded; only the samples let someone check *whether that was right*.
+    An audit record that keeps the conclusion and discards the measurement is
+    not an audit record, and the Workbench chart cannot be redrawn from it after
+    a restart.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    channel: str
+    position: int
+    x_unit: str = ""
+    y_unit: str = ""
+    # [[x, y], ...] rather than objects: this is the bulk of a stored inspection
+    # and the compact form roughly halves it.
+    samples: list[list[float]] = Field(default_factory=list)
+
+
 class InspectionEvent(BaseModel):
     """What arrives at the station. The trigger for one graph run."""
 
@@ -405,6 +427,8 @@ class QCState(BaseModel):
     data_quality_reasons: tuple[str, ...] = ()
 
     frames: list[FrameVerdict] = Field(default_factory=list)
+    # Raw measured series. Evidence, not a cache — see SignalRecord.
+    signals: list[SignalRecord] = Field(default_factory=list)
     vision: VisionVerdict | None = None
     process: ProcessVerdict | None = None
     context: MESContext | None = None
@@ -412,13 +436,24 @@ class QCState(BaseModel):
     root_cause: RootCauseReport | None = None
     triage: TriageResult | None = None
     guardrail: GuardrailReport = Field(default_factory=GuardrailReport)
-    actions: list[ActionRecord] = Field(default_factory=list)
     hitl: HitlRequest | None = None
 
-    trace: list[TraceSpan] = Field(default_factory=list)
+    # -- accumulating channels --------------------------------------------
+    # `operator.add` is a LangGraph reducer: when several nodes run in parallel
+    # and each returns a partial update, the framework CONCATENATES these lists
+    # instead of last-write-wins. Without it, Vision / Process / Context running
+    # concurrently would each overwrite the others' trace spans and the Agent
+    # Console would show one node instead of three.
+    #
+    # Pydantic ignores the extra annotation metadata, so the runtime type is
+    # still list[...]. Every one of these channels is append-only by design --
+    # a trace you can rewrite is not an audit log.
+    actions: Annotated[list[ActionRecord], operator.add] = Field(default_factory=list)
+    trace: Annotated[list[TraceSpan], operator.add] = Field(default_factory=list)
+    degradations: Annotated[list[DegradationKind], operator.add] = Field(default_factory=list)
+
     retries: dict[str, int] = Field(default_factory=dict)
     budget: BudgetLedger = Field(default_factory=BudgetLedger)
-    degradations: list[DegradationKind] = Field(default_factory=list)
 
     status: str = "ingesting"
     created_at: datetime = Field(default_factory=_now)
