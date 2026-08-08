@@ -27,7 +27,15 @@ dist/
 .forge/
 data/generated/
 *.sqlite3
+
+# Chroma DB (vector database - not version controlled)
 chroma_index/
+chroma_data/
+.chroma/
+*.chroma
+chroma-*.db
+RAG/chroma_persist/
+RAG/__pycache__/
 
 # OS / editor
 .DS_Store
